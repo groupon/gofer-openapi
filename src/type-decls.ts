@@ -6,14 +6,16 @@ import { schemaToAnnotation } from './schema';
 
 export default function generateTypeDecls(
   components: OpenAPIV3.ComponentsObject = {}
-): t.TypeAlias[] {
+): t.ExportNamedDeclaration[] {
   const { schemas } = components;
 
-  return Object.entries(schemas || {}).flatMap(([key, schema]) => {
-    return t.typeAlias(
-      t.identifier(normalizeRefName('schemas', key)),
-      null,
-      schemaToAnnotation(schema)
-    );
-  });
+  return Object.entries(schemas || {}).flatMap(([key, schema]) =>
+    t.exportNamedDeclaration(
+      t.typeAlias(
+        t.identifier(normalizeRefName('schemas', key)),
+        null,
+        schemaToAnnotation(schema)
+      )
+    )
+  );
 }

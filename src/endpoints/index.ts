@@ -67,6 +67,9 @@ export default function generateEndpoints({
               schema: jsonReqBodySchema,
               required: true,
             });
+          } else {
+            // TODO: handle application/octet-stream for file uploads
+            debug(`Skipping unhandled requestBody for ${operationId}`);
           }
         }
 

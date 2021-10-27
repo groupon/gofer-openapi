@@ -9,17 +9,38 @@ const debug = Debug('gofer:openapi:schema');
 function objectTypeAnnotation({
   properties = {},
   required = [],
+  additionalProperties,
 }: OpenAPIV3.NonArraySchemaObject) {
-  return t.objectTypeAnnotation(
+  const addPropAnn =
+    !!additionalProperties &&
+    typeof additionalProperties === 'object' &&
+    t.genericTypeAnnotation(
+      t.identifier('Record'),
+      t.typeParameterInstantiation([
+        t.stringTypeAnnotation(),
+        schemaToAnnotation(additionalProperties),
+      ])
+    );
+
+  const objAnn = t.objectTypeAnnotation(
     Object.entries(properties).map(([key, propSchema]) =>
       Object.assign(
         t.objectTypeProperty(t.identifier(key), schemaToAnnotation(propSchema)),
-        {
-          optional: !required.includes(key),
-        }
+        { optional: !required.includes(key) }
       )
     )
   );
+
+  if (addPropAnn) {
+    // if the object is *all* additional properties, just return the Record<>
+    // if there are additional properties, include them &'ed with the object
+    // type to make an open object
+    return Object.keys(properties).length === 0
+      ? addPropAnn
+      : t.intersectionTypeAnnotation([objAnn, addPropAnn]);
+  }
+
+  return objAnn;
 }
 
 export function schemaToAnnotation(

@@ -1,6 +1,7 @@
 import * as t from '@babel/types';
 import type { OpenAPIV3 as o } from 'openapi-types';
 import Debug from 'debug';
+import camelCase from 'lodash.camelcase';
 
 import { resolveRef } from '../refs';
 import { schemaToAnnotation } from '../schema';
@@ -28,7 +29,7 @@ export default function parseParameters(
   parameters: (o.ReferenceObject | o.ParameterObject)[],
   components: o.ComponentsObject
 ): [(t.AssignmentPattern | t.Identifier)[], t.ObjectProperty[]] {
-  const params: Record<'qs' | 'pathParams' | 'headers', string[]> = {
+  const params: Record<'qs' | 'pathParams' | 'headers', [string, string][]> = {
     qs: [],
     pathParams: [],
     headers: [],
@@ -52,21 +53,23 @@ export default function parseParameters(
 
     const { in: section, name, schema, required } = param;
 
+    const camelName = camelCase(name);
+
     switch (section) {
       case 'query':
-        params.qs.push(name);
+        params.qs.push([name, camelName]);
         break;
       case 'path':
-        params.pathParams.push(name);
+        params.pathParams.push([name, camelName]);
         break;
-      case 'headers':
-        params.headers.push(name);
+      case 'header':
+        params.headers.push([name, camelName]);
         break;
       case 'body':
         hasBody = true;
         break;
       default:
-        debug(`"in" value of ${section} for ${name} not supported`);
+        debug(`"in: ${section}" for ${name} not supported`);
         continue;
     }
 
@@ -74,7 +77,7 @@ export default function parseParameters(
       ? schemaToAnnotation(schema)
       : t.stringTypeAnnotation();
     optTypeProps.push(
-      Object.assign(t.objectTypeProperty(t.identifier(name), annotation), {
+      Object.assign(t.objectTypeProperty(t.identifier(camelName), annotation), {
         optional: !required,
       })
     );
@@ -89,10 +92,9 @@ export default function parseParameters(
   if (optTypeProps.length === 1 && hasBody) {
     const { value: annotation, optional } = optTypeProps[0];
 
-    const varName =
-      t.isGenericTypeAnnotation(annotation) && t.isIdentifier(annotation.id)
-        ? lcFirst(annotation.id.name)
-        : 'body';
+    // if we can easily figure out a good name, then do so
+    // TODO: use this for opts.body also
+    const varName = bodyVarName(annotation);
 
     // someMethod(body?: Blah)
     methodArg = Object.assign(t.identifier(varName), {
@@ -116,10 +118,13 @@ export default function parseParameters(
             t.objectProperty(
               t.identifier(opt),
               t.objectExpression(
-                vars.map(v =>
+                vars.map(([name, camelName]) =>
                   t.objectProperty(
-                    t.identifier(v),
-                    t.memberExpression(t.identifier('opts'), t.identifier(v))
+                    t.identifier(name),
+                    t.memberExpression(
+                      t.identifier('opts'),
+                      t.identifier(camelName)
+                    )
                   )
                 )
               )
@@ -141,6 +146,18 @@ export default function parseParameters(
   return [[methodArg], fetchOpts];
 }
 
-function lcFirst(name: string) {
-  return name.slice(0, 1).toLowerCase() + name.slice(1);
+function bodyVarName(annotation: t.FlowType) {
+  let plural = false;
+  if (t.isArrayTypeAnnotation(annotation)) {
+    annotation = annotation.elementType;
+    plural = true;
+  }
+
+  return t.isGenericTypeAnnotation(annotation) && t.isIdentifier(annotation.id)
+    ? pluralize(camelCase(annotation.id.name), plural)
+    : 'body';
+}
+
+function pluralize(word: string, plural: boolean) {
+  return !plural ? word : word.endsWith('s') ? `${word}es` : `${word}s`;
 }
