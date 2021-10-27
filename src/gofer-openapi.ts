@@ -1,7 +1,7 @@
 import YAML from 'yaml';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import generate from '@babel/generator';
-import t from '@babel/types';
+import * as t from '@babel/types';
 import Debug from 'debug';
 import type { OpenAPIV3 } from 'openapi-types';
 

@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import { goferFromOpenAPI } from '../src/gofer-openapi';
+import { goferFromOpenAPI } from '../';
 
 const petStoreYML = fs.readFileSync(
   require.resolve('./fixtures/petstore3.yml'),

@@ -1,4 +1,4 @@
-import t from '@babel/types';
+import * as t from '@babel/types';
 import type { OpenAPIV3 } from 'openapi-types';
 /**
  * Given parameters like:
