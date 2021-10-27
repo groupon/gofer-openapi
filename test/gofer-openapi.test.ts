@@ -1,9 +1,6 @@
-'use strict';
+import fs from 'fs';
 
-const assert = require('assert');
-const fs = require('fs');
-
-const { goferFromOpenAPI } = require('../');
+import { goferFromOpenAPI } from '../src/gofer-openapi';
 
 const petStoreYML = fs.readFileSync(
   require.resolve('./fixtures/petstore3.yml'),
@@ -17,6 +14,7 @@ const classTmpl = fs.readFileSync(
 
 describe('gofer-openapi', () => {
   it('builds a set of working Gofer Endpoints', async () => {
+    // eslint-disable-next-line no-console
     console.log(await goferFromOpenAPI(classTmpl, petStoreYML));
   });
 });

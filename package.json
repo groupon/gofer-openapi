@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "description": "Gofer Openapi",
   "license": "BSD-3-Clause",
-  "main": "lib/gofer-openapi.js",
+  "main": "lib/src/gofer-openapi.js",
+  "types": "lib/src/gofer-openapi.d.ts",
   "homepage": "https://github.com/groupon/gofer-openapi",
   "repository": {
     "type": "git",
@@ -14,14 +15,15 @@
   },
   "scripts": {
     "lint": "npm-run-all lint:*",
-    "lint:js": "eslint .",
-    "lint:tsc": "rm -rf lib/typedefs && tsc",
+    "lint:ts": "eslint .",
     "pretest": "npm-run-all pretest:*",
+    "build": "rm -rf lib && tsc",
     "test": "npm-run-all test:*",
     "posttest": "npm-run-all posttest:*",
+    "pretest:build": "npm run build",
     "pretest:lint": "npm-run-all lint:*",
     "posttest:nlm": "nlm verify",
-    "test:unit": "c8 mocha"
+    "test:unit": "c8 mocha lib/test"
   },
   "c8": {
     "reporter": [
@@ -32,7 +34,7 @@
       "example{,s,-app}/**",
       "**/*.d.ts",
       "**/*{.,-,c}{spec,test}.{js,cjs,mjs,ts}",
-      "{spec,test}{,s}/**"
+      "lib/{spec,test}{,s}/**"
     ]
   },
   "engines": {
@@ -44,11 +46,10 @@
   "nlm": {
     "license": {
       "files": [
-        "lib"
+        "src"
       ]
     }
   },
-  "types": "lib/typedefs/lib/gofer-openapi.d.ts",
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.0.3",
     "@babel/generator": "^7.15.8",
@@ -66,6 +67,8 @@
     "@types/debug": "^4.1.7",
     "@types/mocha": "^7.0.2",
     "@types/node": "^12",
+    "@typescript-eslint/eslint-plugin": "^5.2.0",
+    "@typescript-eslint/parser": "^5.2.0",
     "c8": "^7.7.3",
     "eslint": "^7.29.0",
     "eslint-config-groupon": "^10.0.4",
@@ -86,7 +89,7 @@
   },
   "files": [
     "*.js",
-    "lib"
+    "lib/src"
   ],
   "publishConfig": {
     "registry": "https://registry.npmjs.org"

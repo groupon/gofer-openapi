@@ -1,13 +1,10 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "checkJs": true,
     "esModuleInterop": true,
     "module": "CommonJS",
     "moduleResolution": "node",
     "declaration": true,
-    "declarationDir": "lib/typedefs",
-    "emitDeclarationOnly": true,
+    "outDir": "lib",
     "resolveJsonModule": true,
     "strict": true,
     "skipLibCheck": true,
@@ -17,13 +14,9 @@
       "mocha"
     ]
   },
-  "exclude": [
-    "test"
-  ],
   "include": [
     "typings/**/*.d.ts",
-    "*.js",
-    "lib/**/*.js",
-    "test/**/*.js"
+    "src/**/*.ts",
+    "test/**/*.ts"
   ]
 }

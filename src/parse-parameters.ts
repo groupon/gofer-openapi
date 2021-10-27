@@ -1,16 +1,11 @@
-'use strict';
+import t from '@babel/types';
+import type { OpenAPIV3 } from 'openapi-types';
+import Debug from 'debug';
 
-const t = require('@babel/types');
-const debug = require('debug')('gofer:openapi:parse-parameters');
+import { resolveRef } from './refs';
+import { schemaToAnnotation } from './schema';
 
-const { resolveRef } = require('./refs');
-const { schemaToAnnotation } = require('./schema');
-
-/**
- * @typedef {import('openapi-types').OpenAPIV3.ComponentsObject} ComponentsObject
- * @typedef {import('openapi-types').OpenAPIV3.ParameterObject} ParameterObject
- * @typedef {import('openapi-types').OpenAPIV3.ReferenceObject} ReferenceObject
- */
+const debug = Debug('gofer:openapi:parse-parameters');
 
 /**
  * Given parameters like:
@@ -28,30 +23,27 @@ const { schemaToAnnotation } = require('./schema');
  *   return this.get('/path/to/some', { qs: { foo: opts.foo } }).json();
  *                                      ^ properties
  * }
- *
- * @param {(ReferenceObject | ParameterObject)[]} parameters
- * @param {ComponentsObject} components
- * @returns {[(t.AssignmentPattern | t.Identifier)[], t.ObjectProperty[]]}
  */
-function parseParameters(parameters, components) {
-  /** @type {Record<'qs' | 'pathParams' | 'headers', string[]>} */
-  const params = {
+export default function parseParameters(
+  parameters: (OpenAPIV3.ReferenceObject | OpenAPIV3.ParameterObject)[],
+  components: OpenAPIV3.ComponentsObject
+): [(t.AssignmentPattern | t.Identifier)[], t.ObjectProperty[]] {
+  const params: Record<'qs' | 'pathParams' | 'headers', string[]> = {
     qs: [],
     pathParams: [],
     headers: [],
   };
 
-  /** @type {t.ObjectTypeProperty[]} */
-  const optTypeProps = [];
+  const optTypeProps: t.ObjectTypeProperty[] = [];
 
   for (const refOrParam of parameters) {
-    /** @type {ParameterObject} */
-    let param;
+    let param: OpenAPIV3.ParameterObject;
     if ('$ref' in refOrParam) {
       try {
-        param = /** @type {ParameterObject} */ (
-          resolveRef(refOrParam.$ref, components)
-        );
+        param = resolveRef(
+          refOrParam.$ref,
+          components
+        ) as OpenAPIV3.ParameterObject;
       } catch (err) {
         debug(err);
         continue;
@@ -90,10 +82,12 @@ function parseParameters(parameters, components) {
   if (optTypeProps.length === 0) return [[], []];
 
   // (opts: { someOpt: string }) | (opts: { someOpt?: string } = {})
-  /** @type {t.Identifier | t.AssignmentPattern} */
-  let methodArg = Object.assign(t.identifier('opts'), {
-    typeAnnotation: t.typeAnnotation(t.objectTypeAnnotation(optTypeProps)),
-  });
+  let methodArg: t.Identifier | t.AssignmentPattern = Object.assign(
+    t.identifier('opts'),
+    {
+      typeAnnotation: t.typeAnnotation(t.objectTypeAnnotation(optTypeProps)),
+    }
+  );
   if (optTypeProps.every(p => p.optional)) {
     methodArg = t.assignmentPattern(methodArg, t.objectExpression([]));
   }
@@ -119,4 +113,3 @@ function parseParameters(parameters, components) {
 
   return [[methodArg], fetchOpts];
 }
-module.exports = parseParameters;

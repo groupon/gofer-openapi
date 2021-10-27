@@ -1,18 +1,12 @@
-'use strict';
-
-/**
- * @typedef {import('openapi-types').OpenAPIV3.ComponentsObject} ComponentsObject
- */
+import type { OpenAPIV3 } from 'openapi-types';
 
 const COMP_REF_RE = /^#\/components\/([a-z]+(?:[A-Z][a-z]*)*)\/(\w+)$/;
 
 /**
  * Converts #/components/requestBodies/someThing
  *       to RequestBodiesSomeThing
- *
- * @param {string} $ref
  */
-function normalizeRefName($ref) {
+export function normalizeRefName($ref: string) {
   const m = $ref.match(COMP_REF_RE);
   if (!m) throw new Error(`Failed to normalize name for $ref: ${$ref}`);
   const [, type, name] = m;
@@ -23,16 +17,14 @@ function normalizeRefName($ref) {
     name.slice(1)
   );
 }
-exports.normalizeRefName = normalizeRefName;
 
-/**
- * @param {string} $ref
- * @param {ComponentsObject} components
- */
-function resolveRef($ref, components) {
+export function resolveRef(
+  $ref: string,
+  components: OpenAPIV3.ComponentsObject
+) {
   const m = $ref.match(COMP_REF_RE);
   if (!m) throw new Error(`Can't de-ref $ref: ${$ref}`);
-  const type = /** @type {keyof components} */ (m[1]);
+  const type = m[1] as keyof OpenAPIV3.ComponentsObject;
   const name = m[2];
 
   const compsType = components[type];
@@ -41,4 +33,3 @@ function resolveRef($ref, components) {
   if (!res) throw new Error(`Couldn't find ${name} in components.${type}`);
   return res;
 }
-exports.resolveRef = resolveRef;

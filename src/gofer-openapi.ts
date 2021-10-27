@@ -1,19 +1,14 @@
-'use strict';
+import YAML from 'yaml';
+import SwaggerParser from '@apidevtools/swagger-parser';
+import generate from '@babel/generator';
+import t from '@babel/types';
+import Debug from 'debug';
+import type { OpenAPIV3 } from 'openapi-types';
 
-const YAML = require('yaml');
-const SwaggerParser = require('@apidevtools/swagger-parser');
-const { default: generate } = require('@babel/generator');
-const t = require('@babel/types');
-const debug = require('debug')('gofer:openapi');
+import buildResponseType from './response-type';
+import parseParameters from './parse-parameters';
 
-const buildResponseType = require('./response-type');
-const parseParameters = require('./parse-parameters');
-
-/**
- * @typedef {import('openapi-types').OpenAPIV3.Document} Document
- * @typedef {import('openapi-types').OpenAPIV3.ParameterObject} ParameterObject
- * @typedef {import('openapi-types').OpenAPIV3.OperationObject} OperationObject
- */
+const debug = Debug('gofer:openapi');
 
 const DEFAULT_PARSE_OPTIONS = {
   resolve: {
@@ -25,12 +20,10 @@ const DEFAULT_PARSE_OPTIONS = {
   },
 };
 
-/** @param {Document} api */
-function generateEndpoints({ paths, components = {} }) {
+function generateEndpoints({ paths, components = {} }: OpenAPIV3.Document) {
   if (!paths) throw new Error('No paths!');
 
-  /** @type {Set<string>} */
-  const seenOpIds = new Set();
+  const seenOpIds: Set<string> = new Set();
   return Object.entries(paths).flatMap(([path, pathItem]) => {
     // separate the cruft from the real HTTP methods
     const {
@@ -46,8 +39,10 @@ function generateEndpoints({ paths, components = {} }) {
     }
 
     return Object.entries(methods).flatMap(
-      /** @param {[string, OperationObject]} entry */
-      ([method, { operationId, parameters, responses }]) => {
+      ([method, { operationId, parameters, responses }]: [
+        string,
+        OpenAPIV3.OperationObject
+      ]) => {
         if (!operationId) return [];
         if (seenOpIds.has(operationId)) {
           debug(`Skipping duplicate operationId: ${operationId}`);
@@ -62,9 +57,8 @@ function generateEndpoints({ paths, components = {} }) {
           ),
         ];
 
-        // opId() {
-        /** @type {(t.Identifier | t.AssignmentPattern)[]} */
-        const methodArgs = [];
+        // opId()
+        const methodArgs: (t.Identifier | t.AssignmentPattern)[] = [];
         // this.get('/path', { endpointName: opId })
         const fetchArgs = [
           t.stringLiteral(path),
@@ -120,13 +114,17 @@ function generateEndpoints({ paths, components = {} }) {
   });
 }
 
-/**
- * @param {string} classTemplate
- * @param {string | unknown} openAPI
- */
-async function goferFromOpenAPI(classTemplate, openAPI) {
-  const spec = typeof openAPI === 'string' ? YAML.parse(openAPI) : openAPI;
-  const api = await SwaggerParser.validate(spec, DEFAULT_PARSE_OPTIONS);
+export async function goferFromOpenAPI(classTemplate: string, openAPI: any) {
+  const spec = (
+    typeof openAPI === 'string' ? YAML.parse(openAPI) : openAPI
+  ) as OpenAPIV3.Document;
+  if (!(spec.openapi || '').startsWith('3.')) {
+    throw new Error('Only OpenAPI 3.x supported at the moment');
+  }
+  const api = (await SwaggerParser.validate(
+    spec,
+    DEFAULT_PARSE_OPTIONS
+  )) as OpenAPIV3.Document;
   const endpoints = generateEndpoints(api);
   const endpointsJS = generate(t.classBody(endpoints)).code.replace(
     /^\s*\{\s*|\s*\}\s*$/g,
@@ -134,4 +132,3 @@ async function goferFromOpenAPI(classTemplate, openAPI) {
   );
   return classTemplate.replace('__OPENAPI_ENDPOINTS__', endpointsJS);
 }
-exports.goferFromOpenAPI = goferFromOpenAPI;
