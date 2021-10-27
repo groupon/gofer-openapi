@@ -1,1 +1,1 @@
-export declare function goferFromOpenAPI(classTemplate: string, openAPI: any): Promise<string>;
+export declare function goferFromOpenAPI(classTemplate: string, openAPI: any): string;

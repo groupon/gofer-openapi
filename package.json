@@ -18,6 +18,7 @@
     "lint:ts": "eslint .",
     "pretest": "npm-run-all pretest:*",
     "build": "rm -rf lib && tsc",
+    "watch": "tsc --watch",
     "test": "npm-run-all test:*",
     "posttest": "npm-run-all posttest:*",
     "pretest:build": "npm run build",

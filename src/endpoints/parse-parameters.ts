@@ -2,8 +2,8 @@ import * as t from '@babel/types';
 import type { OpenAPIV3 } from 'openapi-types';
 import Debug from 'debug';
 
-import { resolveRef } from './refs';
-import { schemaToAnnotation } from './schema';
+import { resolveRef } from '../refs';
+import { schemaToAnnotation } from '../schema';
 
 const debug = Debug('gofer:openapi:parse-parameters');
 

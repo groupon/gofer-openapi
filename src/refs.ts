@@ -2,20 +2,24 @@ import type { OpenAPIV3 } from 'openapi-types';
 
 const COMP_REF_RE = /^#\/components\/([a-z]+(?:[A-Z][a-z]*)*)\/(\w+)$/;
 
+export function normalizeRefName(kind: string, name: string) {
+  if (kind === 'schemas') kind = '';
+  return (
+    kind.slice(0, 1).toUpperCase() +
+    kind.slice(1) +
+    name[0].toUpperCase() +
+    name.slice(1)
+  );
+}
+
 /**
  * Converts #/components/requestBodies/someThing
  *       to RequestBodiesSomeThing
  */
-export function normalizeRefName($ref: string) {
+export function normalizeRefPath($ref: string): string {
   const m = $ref.match(COMP_REF_RE);
   if (!m) throw new Error(`Failed to normalize name for $ref: ${$ref}`);
-  const [, type, name] = m;
-  return (
-    type[0].toUpperCase() +
-    type.slice(1) +
-    name[0].toUpperCase() +
-    name.slice(1)
-  );
+  return normalizeRefName(m[1], m[2]);
 }
 
 export function resolveRef(
