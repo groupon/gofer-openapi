@@ -4,6 +4,7 @@ import type { OpenAPIV3 } from 'openapi-types';
 
 import buildResponseType from './response-type';
 import parseParameters from './parse-parameters';
+import { resolveMaybeRef } from '../refs';
 
 const debug = Debug('gofer:openapi');
 
@@ -29,7 +30,7 @@ export default function generateEndpoints({
     }
 
     return Object.entries(methods).flatMap(
-      ([method, { operationId, parameters, responses }]: [
+      ([method, { operationId, parameters = [], responses, requestBody }]: [
         string,
         OpenAPIV3.OperationObject
       ]) => {
@@ -55,7 +56,21 @@ export default function generateEndpoints({
           t.objectExpression(fetchOpts),
         ];
 
-        if (parameters) {
+        if (requestBody) {
+          const jsonReqBodySchema = resolveMaybeRef(requestBody, components)
+            .content?.['application/json']?.schema;
+          if (jsonReqBodySchema) {
+            // TODO: something nicer than just "body" as opt
+            parameters.push({
+              name: 'body',
+              in: 'body',
+              schema: jsonReqBodySchema,
+              required: true,
+            });
+          }
+        }
+
+        if (pathParameters || parameters) {
           const [paramMethodArgs, paramFetchOpts] = parseParameters(
             [...(pathParameters || []), ...parameters],
             components

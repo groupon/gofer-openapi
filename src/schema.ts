@@ -40,6 +40,7 @@ export function schemaToAnnotation(
     case 'string':
       return t.stringTypeAnnotation();
     case 'number':
+    case 'integer':
       return t.numberTypeAnnotation();
     case 'boolean':
       return t.booleanTypeAnnotation();

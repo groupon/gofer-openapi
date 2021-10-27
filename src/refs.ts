@@ -22,6 +22,15 @@ export function normalizeRefPath($ref: string): string {
   return normalizeRefName(m[1], m[2]);
 }
 
+export function resolveMaybeRef<T>(
+  maybeRef: OpenAPIV3.ReferenceObject | T,
+  components: OpenAPIV3.ComponentsObject
+): T {
+  return '$ref' in maybeRef
+    ? (resolveRef(maybeRef.$ref, components) as T)
+    : maybeRef;
+}
+
 export function resolveRef(
   $ref: string,
   components: OpenAPIV3.ComponentsObject

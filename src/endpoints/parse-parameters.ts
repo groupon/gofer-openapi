@@ -1,5 +1,5 @@
 import * as t from '@babel/types';
-import type { OpenAPIV3 } from 'openapi-types';
+import type { OpenAPIV3 as o } from 'openapi-types';
 import Debug from 'debug';
 
 import { resolveRef } from '../refs';
@@ -25,25 +25,23 @@ const debug = Debug('gofer:openapi:parse-parameters');
  * }
  */
 export default function parseParameters(
-  parameters: (OpenAPIV3.ReferenceObject | OpenAPIV3.ParameterObject)[],
-  components: OpenAPIV3.ComponentsObject
+  parameters: (o.ReferenceObject | o.ParameterObject)[],
+  components: o.ComponentsObject
 ): [(t.AssignmentPattern | t.Identifier)[], t.ObjectProperty[]] {
   const params: Record<'qs' | 'pathParams' | 'headers', string[]> = {
     qs: [],
     pathParams: [],
     headers: [],
   };
+  let hasBody = false;
 
   const optTypeProps: t.ObjectTypeProperty[] = [];
 
   for (const refOrParam of parameters) {
-    let param: OpenAPIV3.ParameterObject;
+    let param: o.ParameterObject;
     if ('$ref' in refOrParam) {
       try {
-        param = resolveRef(
-          refOrParam.$ref,
-          components
-        ) as OpenAPIV3.ParameterObject;
+        param = resolveRef(refOrParam.$ref, components) as o.ParameterObject;
       } catch (err) {
         debug(err);
         continue;
@@ -64,6 +62,9 @@ export default function parseParameters(
       case 'headers':
         params.headers.push(name);
         break;
+      case 'body':
+        hasBody = true;
+        break;
       default:
         debug(`"in" value of ${section} for ${name} not supported`);
         continue;
@@ -81,35 +82,65 @@ export default function parseParameters(
 
   if (optTypeProps.length === 0) return [[], []];
 
-  // (opts: { someOpt: string }) | (opts: { someOpt?: string } = {})
-  let methodArg: t.Identifier | t.AssignmentPattern = Object.assign(
-    t.identifier('opts'),
-    {
-      typeAnnotation: t.typeAnnotation(t.objectTypeAnnotation(optTypeProps)),
-    }
-  );
-  if (optTypeProps.every(p => p.optional)) {
-    methodArg = t.assignmentPattern(methodArg, t.objectExpression([]));
-  }
+  let methodArg: t.Identifier | t.AssignmentPattern;
+  let fetchOpts: t.ObjectProperty[];
 
-  // { qs: { foo: opts.foo , ... }, pathParams: ... }
-  const fetchOpts = Object.entries(params).flatMap(([opt, vars]) =>
-    vars.length > 0
-      ? [
-          t.objectProperty(
-            t.identifier(opt),
-            t.objectExpression(
-              vars.map(v =>
-                t.objectProperty(
-                  t.identifier(v),
-                  t.memberExpression(t.identifier('opts'), t.identifier(v))
+  // if the only arg is the requestBody, we can make it the only argument
+  if (optTypeProps.length === 1 && hasBody) {
+    const { value: annotation, optional } = optTypeProps[0];
+
+    const varName =
+      t.isGenericTypeAnnotation(annotation) && t.isIdentifier(annotation.id)
+        ? lcFirst(annotation.id.name)
+        : 'body';
+
+    // someMethod(body?: Blah)
+    methodArg = Object.assign(t.identifier(varName), {
+      typeAnnotation: t.typeAnnotation(annotation),
+      optional,
+    });
+    fetchOpts = [t.objectProperty(t.identifier('json'), t.identifier(varName))];
+  } else {
+    // (opts: { someOpt: string }) | (opts: { someOpt?: string } = {})
+    methodArg = Object.assign(t.identifier('opts'), {
+      typeAnnotation: t.typeAnnotation(t.objectTypeAnnotation(optTypeProps)),
+    });
+    if (optTypeProps.every(p => p.optional)) {
+      methodArg = t.assignmentPattern(methodArg, t.objectExpression([]));
+    }
+
+    // { qs: { foo: opts.foo , ... }, pathParams: ... }
+    fetchOpts = Object.entries(params).flatMap(([opt, vars]) =>
+      vars.length > 0
+        ? [
+            t.objectProperty(
+              t.identifier(opt),
+              t.objectExpression(
+                vars.map(v =>
+                  t.objectProperty(
+                    t.identifier(v),
+                    t.memberExpression(t.identifier('opts'), t.identifier(v))
+                  )
                 )
               )
-            )
-          ),
-        ]
-      : []
-  );
+            ),
+          ]
+        : []
+    );
+
+    if (hasBody) {
+      fetchOpts.push(
+        t.objectProperty(
+          t.identifier('json'),
+          t.memberExpression(t.identifier('opts'), t.identifier('body'))
+        )
+      );
+    }
+  }
 
   return [[methodArg], fetchOpts];
+}
+
+function lcFirst(name: string) {
+  return name.slice(0, 1).toLowerCase() + name.slice(1);
 }

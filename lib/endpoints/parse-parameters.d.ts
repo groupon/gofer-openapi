@@ -1,5 +1,5 @@
 import * as t from '@babel/types';
-import type { OpenAPIV3 } from 'openapi-types';
+import type { OpenAPIV3 as o } from 'openapi-types';
 /**
  * Given parameters like:
  * [
@@ -17,4 +17,4 @@ import type { OpenAPIV3 } from 'openapi-types';
  *                                      ^ properties
  * }
  */
-export default function parseParameters(parameters: (OpenAPIV3.ReferenceObject | OpenAPIV3.ParameterObject)[], components: OpenAPIV3.ComponentsObject): [(t.AssignmentPattern | t.Identifier)[], t.ObjectProperty[]];
+export default function parseParameters(parameters: (o.ReferenceObject | o.ParameterObject)[], components: o.ComponentsObject): [(t.AssignmentPattern | t.Identifier)[], t.ObjectProperty[]];
