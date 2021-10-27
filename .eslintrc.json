@@ -3,5 +3,13 @@
   "extends": [
     "groupon",
     "plugin:regexp/recommended"
+  ],
+  "overrides": [
+    {
+      "files": "*.test.js",
+      "env": {
+        "mocha": true
+      }
+    }
   ]
 }

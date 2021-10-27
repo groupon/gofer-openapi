@@ -15,13 +15,31 @@
   "scripts": {
     "lint": "npm-run-all lint:*",
     "lint:js": "eslint .",
+    "lint:tsc": "rm -rf lib/typedefs && tsc",
     "pretest": "npm-run-all pretest:*",
+    "test": "npm-run-all test:*",
     "posttest": "npm-run-all posttest:*",
     "pretest:lint": "npm-run-all lint:*",
-    "posttest:nlm": "nlm verify"
+    "posttest:nlm": "nlm verify",
+    "test:unit": "c8 mocha"
+  },
+  "c8": {
+    "reporter": [
+      "text",
+      "json-summary"
+    ],
+    "exclude": [
+      "example{,s,-app}/**",
+      "**/*.d.ts",
+      "**/*{.,-,c}{spec,test}.{js,cjs,mjs,ts}",
+      "{spec,test}{,s}/**"
+    ]
   },
   "engines": {
-    "node": ">=12.22"
+    "node": ">=14"
+  },
+  "mocha": {
+    "recursive": true
   },
   "nlm": {
     "license": {
@@ -30,8 +48,25 @@
       ]
     }
   },
-  "dependencies": {},
+  "types": "lib/typedefs/lib/gofer-openapi.d.ts",
+  "dependencies": {
+    "@apidevtools/swagger-parser": "^10.0.3",
+    "@babel/generator": "^7.15.8",
+    "@babel/template": "^7.15.4",
+    "@babel/types": "^7.15.6",
+    "commander": "^8.3.0",
+    "debug": "^4.3.2",
+    "gofer": "^5.2.0",
+    "json-schema-to-typescript": "^10.1.5",
+    "yaml": "^1.10.2"
+  },
   "devDependencies": {
+    "@types/babel__generator": "^7.6.3",
+    "@types/babel__template": "^7.4.1",
+    "@types/debug": "^4.1.7",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^12",
+    "c8": "^7.7.3",
     "eslint": "^7.29.0",
     "eslint-config-groupon": "^10.0.4",
     "eslint-plugin-import": "^2.23.4",
@@ -39,9 +74,11 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-regexp": "^1.4.1",
+    "mocha": "^9.0.1",
     "nlm": "^5.5.1",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.3.1"
+    "prettier": "^2.3.1",
+    "typescript": "^4.4.3"
   },
   "author": {
     "name": "David Bushong",
