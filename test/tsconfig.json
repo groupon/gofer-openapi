@@ -13,5 +13,9 @@
       "node",
       "mocha"
     ]
-  }
+  },
+  "include": [
+    "../typings/**/*.d.ts",
+    "**/*.ts"
+  ]
 }
