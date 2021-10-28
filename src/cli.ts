@@ -34,13 +34,9 @@ const { format, class: className } = prog.opts<{
   class: string;
 }>();
 
-if (format !== 'ts') {
-  throw new Error('Only --format=ts currently supported');
-}
-
 if (args.length < 1) {
   throw new Error('stdin mode not yet implemented');
 }
 
 const specStr = readFileSync(args[0], 'utf8');
-process.stdout.write(goferFromOpenAPI(specStr, { className }));
+process.stdout.write(goferFromOpenAPI(specStr, { className, format }));
