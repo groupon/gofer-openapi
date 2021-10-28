@@ -7,3 +7,5 @@ dist/
 public/
 **/vendor*/
 lib/
+/fixtures
+/cli.js
