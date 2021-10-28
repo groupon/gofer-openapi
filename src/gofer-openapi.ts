@@ -18,9 +18,14 @@ export function goferFromOpenAPI(openAPI: any, opts: Opts) {
     throw new Error('Only OpenAPI 3.x supported at the moment');
   }
 
-  const typeDecls = generateTypeDecls(spec.components);
-  const endpoints = generateEndpoints(spec);
+  const goferImport = t.importDeclaration(
+    [t.importDefaultSpecifier(t.identifier('Gofer'))],
+    t.stringLiteral('gofer')
+  );
 
+  const typeDecls = generateTypeDecls(spec.components);
+
+  const endpoints = generateEndpoints(spec);
   const klass = t.exportNamedDeclaration(
     t.classDeclaration(
       t.identifier(opts.className),
@@ -29,7 +34,7 @@ export function goferFromOpenAPI(openAPI: any, opts: Opts) {
     )
   );
 
-  const ts = generate(t.program([...typeDecls, klass])).code;
+  const ts = generate(t.program([goferImport, ...typeDecls, klass])).code;
 
   return `/* eslint-disable */\n\n${ts}`;
 }

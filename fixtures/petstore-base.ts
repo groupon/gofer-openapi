@@ -1,5 +1,6 @@
 /* eslint-disable */
 
+import Gofer from "gofer";
 export type Order = {
   id?: number,
   petId?: number,
