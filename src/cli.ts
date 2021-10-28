@@ -12,7 +12,6 @@ const prog = new Command();
 prog
   .version(version)
   .requiredOption('-c, --class <ClassName>', 'What to name the resulting class')
-  .option('-e, --extends <ClassName>', 'What class is being extended')
   .addOption(
     new Option(
       '-f, --format <fmt>',
@@ -30,14 +29,9 @@ prog
 prog.parse(process.argv);
 
 const { args } = prog;
-const {
-  format,
-  class: className,
-  extends: extendsClassName,
-} = prog.opts<{
+const { format, class: className } = prog.opts<{
   format: 'ts' | 'js' | 'dts';
   class: string;
-  extends?: string;
 }>();
 
 if (format !== 'ts') {
@@ -49,6 +43,4 @@ if (args.length < 1) {
 }
 
 const specStr = readFileSync(args[0], 'utf8');
-process.stdout.write(
-  goferFromOpenAPI(specStr, { className, extendsClassName })
-);
+process.stdout.write(goferFromOpenAPI(specStr, { className }));

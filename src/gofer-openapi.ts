@@ -8,7 +8,6 @@ import generateTypeDecls from './type-decls';
 
 export interface Opts {
   className: string;
-  extendsClassName?: string;
 }
 
 export function goferFromOpenAPI(openAPI: any, opts: Opts) {
@@ -25,10 +24,12 @@ export function goferFromOpenAPI(openAPI: any, opts: Opts) {
   const klass = t.exportNamedDeclaration(
     t.classDeclaration(
       t.identifier(opts.className),
-      opts.extendsClassName ? t.identifier(opts.extendsClassName) : null,
+      t.identifier('Gofer'),
       t.classBody(endpoints)
     )
   );
 
-  return generate(t.program([...typeDecls, klass])).code;
+  const ts = generate(t.program([...typeDecls, klass])).code;
+
+  return `/* eslint-disable */\n\n${ts}`;
 }
