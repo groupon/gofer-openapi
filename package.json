@@ -27,7 +27,7 @@
     "pretest:build": "npm run build",
     "pretest:lint": "npm-run-all lint:*",
     "posttest:nlm": "nlm verify",
-    "test:unit": "c8 mocha lib/test"
+    "test:unit": "c8 mocha"
   },
   "c8": {
     "reporter": [

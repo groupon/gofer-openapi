@@ -29,7 +29,11 @@ function assertEqualsFixture(text: string, filePath: string) {
 
 describe('gofer-openapi', () => {
   it('builds a Gofer subclass & types', () => {
-    const ts = goferFromOpenAPI(petStoreYML, { className: 'PetStoreBase' });
+    const ts = goferFromOpenAPI(petStoreYML, {
+      className: 'PetStoreBase',
+      format: 'ts',
+      target: 'ES2020',
+    });
 
     assertEqualsFixture(ts, '../fixtures/petstore-base.ts');
   });
