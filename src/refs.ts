@@ -1,15 +1,12 @@
+import camelCase from 'lodash.camelcase';
+import upperFirst from 'lodash.upperfirst';
 import type { OpenAPIV3 } from 'openapi-types';
 
-const COMP_REF_RE = /^#\/components\/([a-z]+(?:[A-Z][a-z]*)*)\/(\w+)$/;
+const COMP_REF_RE = /^#\/components\/([a-z]+(?:[A-Z][a-z]*)*)\/([^/]+)$/;
 
 export function normalizeRefName(kind: string, name: string) {
   if (kind === 'schemas') kind = '';
-  return (
-    kind.slice(0, 1).toUpperCase() +
-    kind.slice(1) +
-    name[0].toUpperCase() +
-    name.slice(1)
-  );
+  return upperFirst(camelCase(`${kind}.${name}`));
 }
 
 /**

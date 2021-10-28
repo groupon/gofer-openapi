@@ -6,11 +6,12 @@ import type { OpenAPIV3 } from 'openapi-types';
 import generateEndpoints from './endpoints';
 import generateTypeDecls from './type-decls';
 
-function stripBraces(code: string) {
-  return code.replace(/^\s*\{\s*|\s*\}\s*$/g, '');
+export interface Opts {
+  className: string;
+  extendsClassName?: string;
 }
 
-export function goferFromOpenAPI(classTemplate: string, openAPI: any) {
+export function goferFromOpenAPI(openAPI: any, opts: Opts) {
   const spec = (
     typeof openAPI === 'string' ? YAML.parse(openAPI) : openAPI
   ) as OpenAPIV3.Document;
@@ -18,13 +19,16 @@ export function goferFromOpenAPI(classTemplate: string, openAPI: any) {
     throw new Error('Only OpenAPI 3.x supported at the moment');
   }
 
-  const endpoints = generateEndpoints(spec);
-  const endpointsTS = stripBraces(generate(t.classBody(endpoints)).code);
-
   const typeDecls = generateTypeDecls(spec.components);
-  const typeDeclsTS = stripBraces(generate(t.blockStatement(typeDecls)).code);
+  const endpoints = generateEndpoints(spec);
 
-  return classTemplate
-    .replace('__OPENAPI_ENDPOINTS__', endpointsTS)
-    .replace('__TYPES__', typeDeclsTS);
+  const klass = t.exportNamedDeclaration(
+    t.classDeclaration(
+      t.identifier(opts.className),
+      opts.extendsClassName ? t.identifier(opts.extendsClassName) : null,
+      t.classBody(endpoints)
+    )
+  );
+
+  return generate(t.program([...typeDecls, klass])).code;
 }
