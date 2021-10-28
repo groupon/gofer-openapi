@@ -6,15 +6,18 @@ import * as ts from 'typescript';
 
 import generateEndpoints from './endpoints';
 import generateTypeDecls from './type-decls';
+import { generateDTS } from './generate-dts';
+import { inferTarget } from './infer-target';
 
 export interface Opts {
   className: string;
   format: 'ts' | 'js' | 'dts';
+  target: keyof typeof ts.ScriptTarget;
 }
 
 export function goferFromOpenAPI(
   openAPI: any,
-  { className, format }: Opts
+  { className, format, target }: Opts
 ): string {
   const spec = (
     typeof openAPI === 'string' ? YAML.parse(openAPI) : openAPI
@@ -46,16 +49,14 @@ export function goferFromOpenAPI(
     case 'ts':
       return tsSrc;
     case 'js':
+      // TODO: allow configurable --target and auto-detect default from
+      // package.json engines.node
       return ts.transpile(tsSrc, {
         module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2020,
+        target: ts.ScriptTarget[target || inferTarget()],
       });
     case 'dts':
-      throw new Error('not yet supported');
-      return ts.transpile(tsSrc, {
-        declaration: true,
-        emitDeclarationOnly: true,
-      });
+      return generateDTS(tsSrc);
     default:
       throw new Error('Invalid format');
   }
