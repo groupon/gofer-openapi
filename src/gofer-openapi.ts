@@ -11,13 +11,14 @@ import { inferTarget } from './infer-target';
 
 export interface Opts {
   className: string;
+  extendsClassName?: string;
   format: 'ts' | 'js' | 'dts';
   target: keyof typeof ts.ScriptTarget;
 }
 
 export function goferFromOpenAPI(
   openAPI: any,
-  { className, format, target }: Opts
+  { className, extendsClassName = 'Gofer', format, target }: Opts
 ): string {
   const spec = (
     typeof openAPI === 'string' ? YAML.parse(openAPI) : openAPI
@@ -26,10 +27,15 @@ export function goferFromOpenAPI(
     throw new Error('Only OpenAPI 3.x supported at the moment');
   }
 
-  const goferImport = t.importDeclaration(
-    [t.importDefaultSpecifier(t.identifier('Gofer'))],
-    t.stringLiteral('gofer')
-  );
+  const goferImports =
+    extendsClassName === 'Gofer'
+      ? [
+          t.importDeclaration(
+            [t.importDefaultSpecifier(t.identifier('Gofer'))],
+            t.stringLiteral('gofer')
+          ),
+        ]
+      : [];
 
   const typeDecls = generateTypeDecls(spec.components);
 
@@ -37,12 +43,14 @@ export function goferFromOpenAPI(
   const klass = t.exportNamedDeclaration(
     t.classDeclaration(
       t.identifier(className),
-      t.identifier('Gofer'),
+      t.identifier(extendsClassName),
       t.classBody(endpoints)
     )
   );
 
-  const bareTS = generate(t.program([goferImport, ...typeDecls, klass])).code;
+  const bareTS = generate(
+    t.program([...goferImports, ...typeDecls, klass])
+  ).code;
   const tsSrc = `/* eslint-disable */\n\n${bareTS}`;
 
   switch (format) {

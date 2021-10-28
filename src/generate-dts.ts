@@ -21,12 +21,12 @@ export function generateDTS(tsSrc: string) {
 
   let savedErr: unknown;
   try {
-    execFileSync('npx', [
-      'tsc',
-      '--declaration',
-      '--emitDeclarationOnly',
-      tsFilePath,
-    ]);
+    const output = execFileSync(
+      'npx',
+      ['tsc', '--declaration', '--emitDeclarationOnly', tsFilePath],
+      { encoding: 'utf8', cwd: path.resolve(__dirname, '..') }
+    );
+    savedErr = new Error(output);
   } catch (err) {
     savedErr = err;
     debug(`tsc produced (expected) error:`, err);

@@ -14,6 +14,11 @@ const prog = new Command();
 prog
   .version(version)
   .requiredOption('-c, --class <ClassName>', 'What to name the resulting class')
+  .option(
+    '-e, --extends <ClassName>',
+    'What class should generated one extend',
+    'Gofer'
+  )
   .addOption(
     new Option(
       '-f, --format <fmt>',
@@ -42,16 +47,17 @@ const { args } = prog;
 const {
   format,
   class: className,
+  extends: extendsClassName,
   target,
 } = prog.opts<{
   format: 'ts' | 'js' | 'dts';
   class: string;
+  extends: string;
   target: keyof typeof ScriptTarget;
 }>();
 
-if (args.length < 1) {
-  throw new Error('stdin mode not yet implemented');
-}
+const specStr = readFileSync(args[0] || 0, 'utf8');
 
-const specStr = readFileSync(args[0], 'utf8');
-process.stdout.write(goferFromOpenAPI(specStr, { className, format, target }));
+process.stdout.write(
+  goferFromOpenAPI(specStr, { className, extendsClassName, format, target })
+);
