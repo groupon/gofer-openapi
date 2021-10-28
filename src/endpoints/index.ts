@@ -1,6 +1,7 @@
 import * as t from '@babel/types';
 import Debug from 'debug';
 import type { OpenAPIV3 } from 'openapi-types';
+import camelCase from 'lodash.camelcase';
 
 import buildResponseType from './response-type';
 import parseParameters from './parse-parameters';
@@ -86,7 +87,7 @@ export default function generateEndpoints({
 
         const classMethod = t.classMethod(
           'method',
-          t.identifier(operationId),
+          t.identifier(camelCase(operationId)),
           methodArgs,
           t.blockStatement([
             // return this.get('/foo', { ... }).json();

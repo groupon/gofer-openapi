@@ -120,7 +120,7 @@ export default function parseParameters(
               t.objectExpression(
                 vars.map(([name, camelName]) =>
                   t.objectProperty(
-                    t.identifier(name),
+                    idOrLiteral(name),
                     t.memberExpression(
                       t.identifier('opts'),
                       t.identifier(camelName)
@@ -160,4 +160,8 @@ function bodyVarName(annotation: t.FlowType) {
 
 function pluralize(word: string, plural: boolean) {
   return !plural ? word : word.endsWith('s') ? `${word}es` : `${word}s`;
+}
+
+function idOrLiteral(name: string) {
+  return /^\w+$/.test(name) ? t.identifier(name) : t.stringLiteral(name);
 }
