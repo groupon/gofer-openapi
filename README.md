@@ -3,6 +3,8 @@
 CLI and Library to assist in converting OpenAPI Specifications into working
 [Gofer][gofer] clients.
 
+[gofer]: https://github.com/groupon/gofer
+
 ![Screenshot of listing methods in VSCode](docs/methods-list.png)
 
 ## CLI Usage
@@ -15,6 +17,19 @@ You may then subclass this class to add a valid constructor as well as any
 hand-written methods you wish to add.  By keeping the files separate, you
 are free to regenerate the auto-generated base class as often as you need
 (as the OpenAPI spec changes).
+
+If you plan to use this regularly in your project, you may wish to install it
+locally first:
+
+```
+$ npm i gofer-openapi
+```
+
+For current CLI usage, see:
+
+```
+$ npx gofer-openapi --help
+```
 
 ### TypeScript
 
@@ -31,7 +46,9 @@ Now you can create your subclass:
 // File: petstore.ts
 import { PetStoreBase } from './petstore-base';
 
-class PetStore extends PetStoreBase {
+export * from './petstore-base';
+
+export class PetStore extends PetStoreBase {
   constructor() {
     super({}, 'PetStore', '1.0.0');
   }
@@ -76,3 +93,25 @@ declaration file, which you can now include in your existing JavaScript
 project without needing to transpile.
 
 The class and usage examples above will basically work exactly the same.
+
+## API
+
+```ts
+import { readFileSync } from 'fs';
+import { goferFromOpenAPI } from 'gofer-openapi';
+
+const typeScriptSrc = goferFromOpenAPI(
+  readFileSync('petstore.yml', 'utf8'),
+  { className: 'PetStore', format: 'ts' }
+);
+```
+
+See the the type declarations for full usage.
+
+## Development
+
+```
+$ npm run watch
+```
+
+Runs the typescript compiler so you can edit the files in `src/`

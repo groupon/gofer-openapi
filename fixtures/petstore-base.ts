@@ -1,12 +1,11 @@
 /* eslint-disable */
-
 import Gofer from "gofer";
 export type Order = {
   id?: number,
   petId?: number,
   quantity?: number,
   shipDate?: string,
-  status?: string,
+  status?: "placed" | "approved" | "delivered",
   complete?: boolean,
 };
 export type Customer = {
@@ -44,7 +43,7 @@ export type Pet = {
   category?: Category,
   photoUrls: string[],
   tags?: Tag[],
-  status?: string,
+  status?: "available" | "pending" | "sold",
 };
 export type ApiResponse = {
   code?: number,
@@ -67,7 +66,7 @@ export class PetStoreBase extends Gofer {
   }
 
   findPetsByStatus(opts: {
-    status?: string
+    status?: "available" | "pending" | "sold"
   } = {}): Promise<Pet[]> {
     return this.get("/pet/findByStatus", {
       endpointName: "findPetsByStatus",

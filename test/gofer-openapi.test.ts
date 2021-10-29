@@ -28,13 +28,32 @@ function assertEqualsFixture(text: string, filePath: string) {
 }
 
 describe('gofer-openapi', () => {
-  it('builds a Gofer subclass & types', () => {
+  it('builds a Gofer subclass & types in TS', () => {
     const ts = goferFromOpenAPI(petStoreYML, {
       className: 'PetStoreBase',
       format: 'ts',
-      target: 'ES2020',
     });
 
     assertEqualsFixture(ts, '../fixtures/petstore-base.ts');
+  });
+
+  it('generates JS from TS', () => {
+    const js = goferFromOpenAPI(petStoreYML, {
+      className: 'PetStoreBase',
+      format: 'js',
+      target: 'ES2020',
+    });
+
+    assertEqualsFixture(js, '../fixtures/petstore-base.js');
+  });
+
+  it('generates DTS from TS', function () {
+    this.timeout(20000); // npx tsc is sooooo sloooow
+    const dts = goferFromOpenAPI(petStoreYML, {
+      className: 'PetStoreBase',
+      format: 'dts',
+    });
+
+    assertEqualsFixture(dts, '../fixtures/petstore-base.d.ts');
   });
 });
