@@ -1,3 +1,14 @@
+### v1.0.1 (2021-10-29)
+<a id="v1.0.1"></a>
+#### 🐛 Bug Fixes
+
+* [`9a85e42`](https://github.com/groupon/gofer-openapi/commit/9a85e429ecec157fd28563df9a730e11e3760cc5) fix: to trigger release
+
+#### 📝 Documentation
+
+* [`76439d4`](https://github.com/groupon/gofer-openapi/commit/76439d4037434eef99c2732dd656e64aca9810cc) docs: README tweak
+
+
 ### v1.0.0 (2021-10-29)
 <a id="v1.0.0"></a>
 #### 🚀 New Features
