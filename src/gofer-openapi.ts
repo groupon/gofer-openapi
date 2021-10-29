@@ -51,6 +51,9 @@ export interface Opts {
 
 const ESLINT_DISABLE_HEADER = '/* eslint-disable */\n';
 
+/**
+ * Main API entry point
+ */
 export function goferFromOpenAPI(
   openAPI: any,
   {
