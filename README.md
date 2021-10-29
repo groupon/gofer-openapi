@@ -14,7 +14,7 @@ CLI and Library to assist in converting OpenAPI Specifications into working
 
 The basic idea is that this tool reads in an OpenAPI 3.x specification file
 and outputs a TypeScript file which contains all of the required type
-declarations, as well as a declaration of a class which extends `Gofer`.
+declarations, as well as a definition of a class which extends `Gofer`.
 
 You may then subclass this class to add a valid constructor as well as any
 hand-written methods you wish to add.  By keeping the files separate, you
