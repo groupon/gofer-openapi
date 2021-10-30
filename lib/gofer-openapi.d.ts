@@ -1,3 +1,4 @@
+import type { OpenAPIV2, OpenAPIV3 } from 'openapi-types';
 import * as ts from 'typescript';
 export interface Opts {
     className: string;
@@ -9,4 +10,4 @@ export interface Opts {
 /**
  * Main API entry point
  */
-export declare function goferFromOpenAPI(openAPI: any, { className, extendsPackage, defaultExport, format, target, }: Opts): string;
+export declare function goferFromOpenAPI(openAPI: OpenAPIV2.Document | OpenAPIV3.Document | string, { className, extendsPackage, defaultExport, format, target, }: Opts): Promise<string>;

@@ -1,5 +1,6 @@
 import assert from 'assert';
 import { readFileSync, writeFileSync } from 'fs';
+import { OpenAPIV2 } from 'openapi-types';
 
 import { goferFromOpenAPI } from '../';
 
@@ -9,6 +10,10 @@ const petStoreYML = readFileSync(
   require.resolve('../fixtures/petstore3.yml'),
   'utf8'
 );
+
+const petStore2 = JSON.parse(
+  readFileSync(require.resolve('../fixtures/petstore2.json'), 'utf8')
+) as OpenAPIV2.Document;
 
 function assertEqualsFixture(text: string, filePath: string) {
   const fullPath = require.resolve(filePath);
@@ -28,8 +33,8 @@ function assertEqualsFixture(text: string, filePath: string) {
 }
 
 describe('gofer-openapi', () => {
-  it('builds a Gofer subclass & types in TS', () => {
-    const ts = goferFromOpenAPI(petStoreYML, {
+  it('builds a Gofer subclass & types in TS', async () => {
+    const ts = await goferFromOpenAPI(petStoreYML, {
       className: 'PetStoreBase',
       format: 'ts',
     });
@@ -37,8 +42,18 @@ describe('gofer-openapi', () => {
     assertEqualsFixture(ts, '../fixtures/petstore-base.ts');
   });
 
-  it('generates JS from TS', () => {
-    const js = goferFromOpenAPI(petStoreYML, {
+  it('handles Swagger 2.x also', async () => {
+    const ts = await goferFromOpenAPI(petStore2, {
+      className: 'PetStore2Base',
+      extendsPackage: 'other-lib',
+      defaultExport: true,
+    });
+
+    assertEqualsFixture(ts, '../fixtures/petstore2-base.ts');
+  });
+
+  it('generates JS from TS', async () => {
+    const js = await goferFromOpenAPI(petStoreYML, {
       className: 'PetStoreBase',
       format: 'js',
       target: 'ES2020',
@@ -47,9 +62,9 @@ describe('gofer-openapi', () => {
     assertEqualsFixture(js, '../fixtures/petstore-base.js');
   });
 
-  it('generates DTS from TS', function () {
+  it('generates DTS from TS', async function () {
     this.timeout(20000); // npx tsc is sooooo sloooow
-    const dts = goferFromOpenAPI(petStoreYML, {
+    const dts = await goferFromOpenAPI(petStoreYML, {
       className: 'PetStoreBase',
       format: 'dts',
     });

@@ -12,8 +12,8 @@ CLI and Library to assist in converting OpenAPI Specifications into working
 
 ## CLI Usage
 
-The basic idea is that this tool reads in an OpenAPI 3.x specification file
-and outputs a TypeScript file which contains all of the required type
+The basic idea is that this tool reads in an OpenAPI 3.x or 2.x specification
+file and outputs a TypeScript file which contains all of the required type
 declarations, as well as a definition of a class which extends `Gofer`.
 
 You may then subclass this class to add a valid constructor as well as any
@@ -100,13 +100,16 @@ The class and usage examples above will basically work exactly the same.
 ## API
 
 ```ts
-import { readFileSync } from 'fs';
+import { readFile } from 'fs/promises';
 import { goferFromOpenAPI } from 'gofer-openapi';
 
-const typeScriptSrc = goferFromOpenAPI(
-  readFileSync('petstore.yml', 'utf8'),
-  { className: 'PetStore', format: 'ts' }
-);
+async function main() {
+  const typeScriptSrc = await goferFromOpenAPI(
+    await readFile('petstore.yml', 'utf8'),
+    { className: 'PetStore', format: 'ts' }
+  );
+  // ...
+}
 ```
 
 See the the type declarations for full usage.
