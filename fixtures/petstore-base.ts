@@ -151,7 +151,7 @@ export class PetStoreBase extends Gofer {
     }).json();
   }
 
-  placeOrder(order: Order): Promise<Order> {
+  placeOrder(order?: Order): Promise<Order> {
     return this.post("/store/order", {
       endpointName: "placeOrder",
       json: order
@@ -180,14 +180,14 @@ export class PetStoreBase extends Gofer {
     }).json();
   }
 
-  createUser(user: User): Promise<void> {
+  createUser(user?: User): Promise<void> {
     return this.post("/user", {
       endpointName: "createUser",
       json: user
     }).json();
   }
 
-  createUsersWithListInput(users: User[]): Promise<User> {
+  createUsersWithListInput(users?: User[]): Promise<User> {
     return this.post("/user/createWithList", {
       endpointName: "createUsersWithListInput",
       json: users
@@ -226,7 +226,7 @@ export class PetStoreBase extends Gofer {
 
   updateUser(opts: {
     username: string,
-    body: User,
+    body?: User,
   }): Promise<void> {
     return this.put("/user/{username}", {
       endpointName: "updateUser",
