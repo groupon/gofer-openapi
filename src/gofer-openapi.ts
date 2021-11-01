@@ -31,8 +31,9 @@
 import YAML from 'yaml';
 import generate from '@babel/generator';
 import * as t from '@babel/types';
-import type { OpenAPIV3 } from 'openapi-types';
+import type { OpenAPIV2, OpenAPIV3 } from 'openapi-types';
 import * as ts from 'typescript';
+import { convertObj } from 'swagger2openapi';
 
 import generateEndpoints from './endpoints';
 import generateTypeDecls from './type-decls';
@@ -54,8 +55,8 @@ const ESLINT_DISABLE_HEADER = '/* eslint-disable */\n';
 /**
  * Main API entry point
  */
-export function goferFromOpenAPI(
-  openAPI: any,
+export async function goferFromOpenAPI(
+  openAPI: OpenAPIV2.Document | OpenAPIV3.Document | string,
   {
     className,
     extendsPackage = 'gofer',
@@ -63,12 +64,19 @@ export function goferFromOpenAPI(
     format = 'ts',
     target,
   }: Opts
-): string {
-  const spec = (
-    typeof openAPI === 'string' ? YAML.parse(openAPI) : openAPI
-  ) as OpenAPIV3.Document;
-  if (!(spec.openapi || '').startsWith('3.')) {
-    throw new Error('Only OpenAPI 3.x supported at the moment');
+): Promise<string> {
+  let spec = (typeof openAPI === 'string' ? YAML.parse(openAPI) : openAPI) as
+    | OpenAPIV2.Document
+    | OpenAPIV3.Document;
+
+  if (!('openapi' in spec)) {
+    if ('swagger' in spec && spec.swagger.startsWith('2.')) {
+      spec = (await convertObj(spec, {})).openapi;
+    } else {
+      throw new Error(
+        'Only Swagger 2.x or OpenAPI 3.x supported at the moment'
+      );
+    }
   }
   const superclassName = upperFirst(camelCase(extendsPackage));
 

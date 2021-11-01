@@ -75,15 +75,15 @@ export declare class PetStoreBase extends Gofer {
         additionalMetadata?: string;
     }): Promise<ApiResponse>;
     getInventory(): Promise<Record<string, number>>;
-    placeOrder(order: Order): Promise<Order>;
+    placeOrder(order?: Order): Promise<Order>;
     getOrderById(opts: {
         orderId: number;
     }): Promise<Order>;
     deleteOrder(opts: {
         orderId: number;
     }): Promise<void>;
-    createUser(user: User): Promise<void>;
-    createUsersWithListInput(users: User[]): Promise<User>;
+    createUser(user?: User): Promise<void>;
+    createUsersWithListInput(users?: User[]): Promise<User>;
     loginUser(opts?: {
         username?: string;
         password?: string;
@@ -94,7 +94,7 @@ export declare class PetStoreBase extends Gofer {
     }): Promise<User>;
     updateUser(opts: {
         username: string;
-        body: User;
+        body?: User;
     }): Promise<void>;
     deleteUser(opts: {
         username: string;

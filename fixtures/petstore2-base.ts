@@ -1,5 +1,26 @@
 /* eslint-disable */
-import Gofer from "gofer";
+import OtherLib from "other-lib";
+export type ApiResponse = {
+  code?: number,
+  type?: string,
+  message?: string,
+};
+export type Category = {
+  id?: number,
+  name?: string,
+};
+export type Pet = {
+  id?: number,
+  category?: Category,
+  name: string,
+  photoUrls: string[],
+  tags?: Tag[],
+  status?: "available" | "pending" | "sold",
+};
+export type Tag = {
+  id?: number,
+  name?: string,
+};
 export type Order = {
   id?: number,
   petId?: number,
@@ -7,21 +28,6 @@ export type Order = {
   shipDate?: string,
   status?: "placed" | "approved" | "delivered",
   complete?: boolean,
-};
-export type Customer = {
-  id?: number,
-  username?: string,
-  address?: Address[],
-};
-export type Address = {
-  street?: string,
-  city?: string,
-  state?: string,
-  zip?: string,
-};
-export type Category = {
-  id?: number,
-  name?: string,
 };
 export type User = {
   id?: number,
@@ -33,32 +39,26 @@ export type User = {
   phone?: string,
   userStatus?: number,
 };
-export type Tag = {
-  id?: number,
-  name?: string,
-};
-export type Pet = {
-  id?: number,
-  name: string,
-  category?: Category,
-  photoUrls: string[],
-  tags?: Tag[],
-  status?: "available" | "pending" | "sold",
-};
-export type ApiResponse = {
-  code?: number,
-  type?: string,
-  message?: string,
-};
-export class PetStoreBase extends Gofer {
-  addPet(pet: Pet): Promise<Pet> {
+export default class PetStore2Base extends OtherLib {
+  uploadFile(opts: {
+    petId: number
+  }): Promise<ApiResponse> {
+    return this.post("/pet/{petId}/uploadImage", {
+      endpointName: "uploadFile",
+      pathParams: {
+        petId: opts.petId
+      }
+    }).json();
+  }
+
+  addPet(pet: Pet): Promise<void> {
     return this.post("/pet", {
       endpointName: "addPet",
       json: pet
     }).json();
   }
 
-  updatePet(pet: Pet): Promise<Pet> {
+  updatePet(pet: Pet): Promise<void> {
     return this.put("/pet", {
       endpointName: "updatePet",
       json: pet
@@ -66,8 +66,8 @@ export class PetStoreBase extends Gofer {
   }
 
   findPetsByStatus(opts: {
-    status?: "available" | "pending" | "sold"
-  } = {}): Promise<Pet[]> {
+    status: ("available" | "pending" | "sold")[]
+  }): Promise<Pet[]> {
     return this.get("/pet/findByStatus", {
       endpointName: "findPetsByStatus",
       qs: {
@@ -77,8 +77,8 @@ export class PetStoreBase extends Gofer {
   }
 
   findPetsByTags(opts: {
-    tags?: string[]
-  } = {}): Promise<Pet[]> {
+    tags: string[]
+  }): Promise<Pet[]> {
     return this.get("/pet/findByTags", {
       endpointName: "findPetsByTags",
       qs: {
@@ -99,16 +99,10 @@ export class PetStoreBase extends Gofer {
   }
 
   updatePetWithForm(opts: {
-    petId: number,
-    name?: string,
-    status?: string,
+    petId: number
   }): Promise<void> {
     return this.post("/pet/{petId}", {
       endpointName: "updatePetWithForm",
-      qs: {
-        name: opts.name,
-        status: opts.status
-      },
       pathParams: {
         petId: opts.petId
       }
@@ -130,28 +124,13 @@ export class PetStoreBase extends Gofer {
     }).json();
   }
 
-  uploadFile(opts: {
-    petId: number,
-    additionalMetadata?: string,
-  }): Promise<ApiResponse> {
-    return this.post("/pet/{petId}/uploadImage", {
-      endpointName: "uploadFile",
-      qs: {
-        additionalMetadata: opts.additionalMetadata
-      },
-      pathParams: {
-        petId: opts.petId
-      }
-    }).json();
-  }
-
   getInventory(): Promise<Record<string, number>> {
     return this.get("/store/inventory", {
       endpointName: "getInventory"
     }).json();
   }
 
-  placeOrder(order?: Order): Promise<Order> {
+  placeOrder(order: Order): Promise<Order> {
     return this.post("/store/order", {
       endpointName: "placeOrder",
       json: order
@@ -180,36 +159,10 @@ export class PetStoreBase extends Gofer {
     }).json();
   }
 
-  createUser(user?: User): Promise<void> {
-    return this.post("/user", {
-      endpointName: "createUser",
-      json: user
-    }).json();
-  }
-
-  createUsersWithListInput(users?: User[]): Promise<User> {
+  createUsersWithListInput(users: User[]): Promise<void> {
     return this.post("/user/createWithList", {
       endpointName: "createUsersWithListInput",
       json: users
-    }).json();
-  }
-
-  loginUser(opts: {
-    username?: string,
-    password?: string,
-  } = {}): Promise<string> {
-    return this.get("/user/login", {
-      endpointName: "loginUser",
-      qs: {
-        username: opts.username,
-        password: opts.password
-      }
-    }).json();
-  }
-
-  logoutUser(): Promise<void> {
-    return this.get("/user/logout", {
-      endpointName: "logoutUser"
     }).json();
   }
 
@@ -226,7 +179,7 @@ export class PetStoreBase extends Gofer {
 
   updateUser(opts: {
     username: string,
-    body?: User,
+    body: User,
   }): Promise<void> {
     return this.put("/user/{username}", {
       endpointName: "updateUser",
@@ -245,6 +198,39 @@ export class PetStoreBase extends Gofer {
       pathParams: {
         username: opts.username
       }
+    }).json();
+  }
+
+  loginUser(opts: {
+    username: string,
+    password: string,
+  }): Promise<string> {
+    return this.get("/user/login", {
+      endpointName: "loginUser",
+      qs: {
+        username: opts.username,
+        password: opts.password
+      }
+    }).json();
+  }
+
+  logoutUser(): Promise<void> {
+    return this.get("/user/logout", {
+      endpointName: "logoutUser"
+    }).json();
+  }
+
+  createUsersWithArrayInput(users: User[]): Promise<void> {
+    return this.post("/user/createWithArray", {
+      endpointName: "createUsersWithArrayInput",
+      json: users
+    }).json();
+  }
+
+  createUser(user: User): Promise<void> {
+    return this.post("/user", {
+      endpointName: "createUser",
+      json: user
     }).json();
   }
 

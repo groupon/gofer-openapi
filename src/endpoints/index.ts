@@ -90,15 +90,16 @@ export default function generateEndpoints({
         ];
 
         if (requestBody) {
-          const jsonReqBodySchema = resolveMaybeRef(requestBody, components)
-            .content?.['application/json']?.schema;
+          const reqBody = resolveMaybeRef(requestBody, components);
+          const jsonReqBodySchema =
+            reqBody.content?.['application/json']?.schema;
           if (jsonReqBodySchema) {
             // TODO: something nicer than just "body" as opt
             parameters.push({
               name: 'body',
               in: 'body',
               schema: jsonReqBodySchema,
-              required: true,
+              required: reqBody.required || false,
             });
           } else {
             // TODO: handle application/octet-stream for file uploads

@@ -94,12 +94,20 @@ const {
 
 const specStr = readFileSync(args[0] || 0, 'utf8');
 
-process.stdout.write(
-  goferFromOpenAPI(specStr, {
-    className,
-    defaultExport,
-    extendsPackage,
-    format,
-    target,
-  })
-);
+async function main() {
+  process.stdout.write(
+    await goferFromOpenAPI(specStr, {
+      className,
+      defaultExport,
+      extendsPackage,
+      format,
+      target,
+    })
+  );
+}
+
+main().catch(err => {
+  process.nextTick(() => {
+    throw err;
+  });
+});
