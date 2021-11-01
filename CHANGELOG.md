@@ -1,3 +1,16 @@
+### v2.0.0 (2021-11-01)
+<a id="v2.0.0"></a>
+#### 💥 Breaking Changes
+
+[#2](https://github.com/groupon/gofer-openapi/pull/2) Support Swagger 2.x specs ([@dbushong](https://github.com/dbushong))
+
+`goferFromOpenAPI` now returns a Promise
+
+#### 🏡 Internal
+
+* [#2](https://github.com/groupon/gofer-openapi/pull/2) Support Swagger 2.x specs ([@dbushong](https://github.com/dbushong))
+
+
 ### v1.0.1 (2021-10-29)
 <a id="v1.0.1"></a>
 #### 🐛 Bug Fixes

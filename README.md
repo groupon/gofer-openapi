@@ -1,6 +1,6 @@
 [![nlm-github](https://img.shields.io/badge/github-groupon%2Fgofer--openapi%2Fissues-F4D03F?logo=github&logoColor=white)](https://github.com/groupon/gofer-openapi/issues)
 ![nlm-node](https://img.shields.io/badge/node-%3E%3D14-blue?logo=node.js&logoColor=white)
-![nlm-version](https://img.shields.io/badge/version-1.0.1-blue?logo=version&logoColor=white)
+![nlm-version](https://img.shields.io/badge/version-2.0.0-blue?logo=version&logoColor=white)
 # `gofer-openapi`
 
 CLI and Library to assist in converting OpenAPI Specifications into working
