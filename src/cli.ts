@@ -71,7 +71,7 @@ prog
   )
   .argument(
     '[path-to-spec-file.yml|json]',
-    'JSON or YAML OpenAPI 3.x spec file; default: stdin'
+    'JSON or YAML OpenAPI 2.x or 3.x spec file; default: stdin'
   )
   .allowExcessArguments(false);
 
