@@ -1,3 +1,10 @@
+### v2.1.0 (2021-11-03)
+<a id="v2.1.0"></a>
+#### 🏡 Internal
+
+* [#3](https://github.com/groupon/gofer-openapi/pull/3) Misc. fixes ([@dbushong](https://github.com/dbushong))
+
+
 ### v2.0.0 (2021-11-01)
 <a id="v2.0.0"></a>
 #### 💥 Breaking Changes
