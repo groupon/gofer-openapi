@@ -74,7 +74,7 @@ export default function buildResponseType(
       resp = refOrResp;
     }
     const content = resp.content || {};
-    let textType: string | null;
+    let textType: string | undefined;
     if ('application/json' in content) {
       const respSchema = content['application/json']?.schema;
       // (1)
@@ -118,16 +118,17 @@ export default function buildResponseType(
 /**
  * returns the most preferred mime type, if found
  */
-function findTextType(content: Record<string, unknown>): string | null {
+function findTextType(content: Record<string, unknown>): string | undefined {
+  // start with preference order
   for (const mt of [
     'text/yaml',
     'application/yaml',
     'text/xml',
     'application/xml',
-    'text/plain',
-    'text/html',
   ]) {
     if (mt in content) return mt;
   }
-  return null;
+
+  // fall back on any text type
+  return Object.keys(content).find(mt => mt.startsWith('text/'));
 }
