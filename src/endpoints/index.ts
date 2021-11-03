@@ -125,31 +125,41 @@ export default function generateEndpoints({
 
         if (acceptMimeType) addAcceptHeader(fetchOpts, acceptMimeType);
 
+        let fetchCallChain =
+          // this.get(...).json()
+          t.callExpression(
+            // this.get(...).json
+            t.memberExpression(
+              // this.get(...)
+              t.callExpression(
+                // this.get
+                t.memberExpression(
+                  t.thisExpression(),
+                  t.identifier(method.toLowerCase())
+                ),
+                fetchArgs
+              ),
+              t.identifier(goferMethod)
+            ),
+            []
+          );
+
+        // if method is void-returning, absorb the output of the .rawBody()
+        // with a .then(() => {}) to make the types happy
+        if (t.isVoidTypeAnnotation(responseType)) {
+          fetchCallChain = t.callExpression(
+            t.memberExpression(fetchCallChain, t.identifier('then')),
+            [t.arrowFunctionExpression([], t.blockStatement([]))]
+          );
+        }
+
         const classMethod = t.classMethod(
           'method',
           t.identifier(camelCase(operationId)),
           methodArgs,
           t.blockStatement([
             // return this.get('/foo', { ... }).json();
-            t.returnStatement(
-              // this.get(...).json()
-              t.callExpression(
-                // this.get(...).json
-                t.memberExpression(
-                  // this.get(...)
-                  t.callExpression(
-                    // this.get
-                    t.memberExpression(
-                      t.thisExpression(),
-                      t.identifier(method.toLowerCase())
-                    ),
-                    fetchArgs
-                  ),
-                  t.identifier(goferMethod)
-                ),
-                []
-              )
-            ),
+            t.returnStatement(fetchCallChain),
           ])
         );
 

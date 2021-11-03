@@ -46,7 +46,7 @@ export default class PetStore2Base extends OtherLib {
     return this.post("/pet/{petId}/uploadImage", {
       endpointName: "uploadFile",
       pathParams: {
-        petId: opts.petId
+        petId: `${opts.petId}`
       }
     }).json();
   }
@@ -55,14 +55,14 @@ export default class PetStore2Base extends OtherLib {
     return this.post("/pet", {
       endpointName: "addPet",
       json: pet
-    }).json();
+    }).rawBody().then(() => {});
   }
 
   updatePet(pet: Pet): Promise<void> {
     return this.put("/pet", {
       endpointName: "updatePet",
       json: pet
-    }).json();
+    }).rawBody().then(() => {});
   }
 
   findPetsByStatus(opts: {
@@ -93,7 +93,7 @@ export default class PetStore2Base extends OtherLib {
     return this.get("/pet/{petId}", {
       endpointName: "getPetById",
       pathParams: {
-        petId: opts.petId
+        petId: `${opts.petId}`
       }
     }).json();
   }
@@ -104,9 +104,9 @@ export default class PetStore2Base extends OtherLib {
     return this.post("/pet/{petId}", {
       endpointName: "updatePetWithForm",
       pathParams: {
-        petId: opts.petId
+        petId: `${opts.petId}`
       }
-    }).json();
+    }).rawBody().then(() => {});
   }
 
   deletePet(opts: {
@@ -116,12 +116,12 @@ export default class PetStore2Base extends OtherLib {
     return this.delete("/pet/{petId}", {
       endpointName: "deletePet",
       pathParams: {
-        petId: opts.petId
+        petId: `${opts.petId}`
       },
       headers: {
         api_key: opts.apiKey
       }
-    }).json();
+    }).rawBody().then(() => {});
   }
 
   getInventory(): Promise<Record<string, number>> {
@@ -143,7 +143,7 @@ export default class PetStore2Base extends OtherLib {
     return this.get("/store/order/{orderId}", {
       endpointName: "getOrderById",
       pathParams: {
-        orderId: opts.orderId
+        orderId: `${opts.orderId}`
       }
     }).json();
   }
@@ -154,16 +154,16 @@ export default class PetStore2Base extends OtherLib {
     return this.delete("/store/order/{orderId}", {
       endpointName: "deleteOrder",
       pathParams: {
-        orderId: opts.orderId
+        orderId: `${opts.orderId}`
       }
-    }).json();
+    }).rawBody().then(() => {});
   }
 
   createUsersWithListInput(users: User[]): Promise<void> {
     return this.post("/user/createWithList", {
       endpointName: "createUsersWithListInput",
       json: users
-    }).json();
+    }).rawBody().then(() => {});
   }
 
   getUserByName(opts: {
@@ -187,7 +187,7 @@ export default class PetStore2Base extends OtherLib {
         username: opts.username
       },
       json: opts.body
-    }).json();
+    }).rawBody().then(() => {});
   }
 
   deleteUser(opts: {
@@ -198,7 +198,7 @@ export default class PetStore2Base extends OtherLib {
       pathParams: {
         username: opts.username
       }
-    }).json();
+    }).rawBody().then(() => {});
   }
 
   loginUser(opts: {
@@ -217,21 +217,21 @@ export default class PetStore2Base extends OtherLib {
   logoutUser(): Promise<void> {
     return this.get("/user/logout", {
       endpointName: "logoutUser"
-    }).json();
+    }).rawBody().then(() => {});
   }
 
   createUsersWithArrayInput(users: User[]): Promise<void> {
     return this.post("/user/createWithArray", {
       endpointName: "createUsersWithArrayInput",
       json: users
-    }).json();
+    }).rawBody().then(() => {});
   }
 
   createUser(user: User): Promise<void> {
     return this.post("/user", {
       endpointName: "createUser",
       json: user
-    }).json();
+    }).rawBody().then(() => {});
   }
 
 }

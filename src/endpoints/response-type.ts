@@ -57,9 +57,9 @@ export default function buildResponseType(
   // 3. any other unknown type(s) exist
   //    * call .rawBody()
   //    * return type is Buffer
-  // 4. we specifically have a no-content response code (201, 204, etc)
+  // 4. if we have other status codes, then absence of 200 is meaningful, so:
   //    * call .rawBody() to resolve the output promise
-  //    * return type is unknown (should be void, but that's more annoying)
+  //    * return type is void
   // 5. nothing exists - assume a crummy schema and try to be as helpful as
   //    possible
   //    * call .json()
@@ -104,22 +104,14 @@ export default function buildResponseType(
         responseType: t.genericTypeAnnotation(t.identifier('Buffer')),
       };
     }
-  } else if (
-    responses[201] ||
-    responses[202] ||
-    responses[203] ||
-    responses[204]
-  ) {
+  } else if (Object.keys(responses).length > 0) {
     // (4)
-    debug('Found no-content status code; returning unknown');
-    return {
-      goferMethod: 'rawBody',
-      responseType: t.genericTypeAnnotation(t.identifier('unknown')),
-    };
+    debug('Found non-200 status code(s); returning void');
+    return { goferMethod: 'rawBody', responseType: t.voidTypeAnnotation() };
   }
 
   // (5)
-  debug('Found no good responses.200.content; returning any');
+  debug('Found no responses.* returning any to be safe');
   return { goferMethod: 'json', responseType: t.anyTypeAnnotation() };
 }
 

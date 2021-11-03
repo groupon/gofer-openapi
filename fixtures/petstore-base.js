@@ -39,7 +39,7 @@ class PetStoreBase extends gofer_1.default {
         return this.get("/pet/{petId}", {
             endpointName: "getPetById",
             pathParams: {
-                petId: opts.petId
+                petId: `${opts.petId}`
             }
         }).json();
     }
@@ -51,20 +51,20 @@ class PetStoreBase extends gofer_1.default {
                 status: opts.status
             },
             pathParams: {
-                petId: opts.petId
+                petId: `${opts.petId}`
             }
-        }).json();
+        }).rawBody().then(() => { });
     }
     deletePet(opts) {
         return this.delete("/pet/{petId}", {
             endpointName: "deletePet",
             pathParams: {
-                petId: opts.petId
+                petId: `${opts.petId}`
             },
             headers: {
                 api_key: opts.apiKey
             }
-        }).json();
+        }).rawBody().then(() => { });
     }
     uploadFile(opts) {
         return this.post("/pet/{petId}/uploadImage", {
@@ -73,7 +73,7 @@ class PetStoreBase extends gofer_1.default {
                 additionalMetadata: opts.additionalMetadata
             },
             pathParams: {
-                petId: opts.petId
+                petId: `${opts.petId}`
             }
         }).json();
     }
@@ -92,7 +92,7 @@ class PetStoreBase extends gofer_1.default {
         return this.get("/store/order/{orderId}", {
             endpointName: "getOrderById",
             pathParams: {
-                orderId: opts.orderId
+                orderId: `${opts.orderId}`
             }
         }).json();
     }
@@ -100,15 +100,15 @@ class PetStoreBase extends gofer_1.default {
         return this.delete("/store/order/{orderId}", {
             endpointName: "deleteOrder",
             pathParams: {
-                orderId: opts.orderId
+                orderId: `${opts.orderId}`
             }
-        }).json();
+        }).rawBody().then(() => { });
     }
     createUser(user) {
         return this.post("/user", {
             endpointName: "createUser",
             json: user
-        }).json();
+        }).rawBody().then(() => { });
     }
     createUsersWithListInput(users) {
         return this.post("/user/createWithList", {
@@ -128,7 +128,7 @@ class PetStoreBase extends gofer_1.default {
     logoutUser() {
         return this.get("/user/logout", {
             endpointName: "logoutUser"
-        }).json();
+        }).rawBody().then(() => { });
     }
     getUserByName(opts) {
         return this.get("/user/{username}", {
@@ -145,7 +145,7 @@ class PetStoreBase extends gofer_1.default {
                 username: opts.username
             },
             json: opts.body
-        }).json();
+        }).rawBody().then(() => { });
     }
     deleteUser(opts) {
         return this.delete("/user/{username}", {
@@ -153,7 +153,7 @@ class PetStoreBase extends gofer_1.default {
             pathParams: {
                 username: opts.username
             }
-        }).json();
+        }).rawBody().then(() => { });
     }
 }
 exports.PetStoreBase = PetStoreBase;
