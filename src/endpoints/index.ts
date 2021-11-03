@@ -118,38 +118,58 @@ export default function generateEndpoints({
           fetchOpts.push(...paramFetchOpts);
         }
 
+        const { goferMethod, responseType, acceptMimeType } = buildResponseType(
+          responses,
+          components
+        );
+
+        if (acceptMimeType) addAcceptHeader(fetchOpts, acceptMimeType);
+
+        let fetchCallChain =
+          // this.get(...).json()
+          t.callExpression(
+            // this.get(...).json
+            t.memberExpression(
+              // this.get(...)
+              t.callExpression(
+                // this.get
+                t.memberExpression(
+                  t.thisExpression(),
+                  t.identifier(method.toLowerCase())
+                ),
+                fetchArgs
+              ),
+              t.identifier(goferMethod)
+            ),
+            []
+          );
+
+        // if method is void-returning, absorb the output of the .rawBody()
+        // with a .then(() => {}) to make the types happy
+        if (t.isVoidTypeAnnotation(responseType)) {
+          fetchCallChain = t.callExpression(
+            t.memberExpression(fetchCallChain, t.identifier('then')),
+            [t.arrowFunctionExpression([], t.blockStatement([]))]
+          );
+        }
+
         const classMethod = t.classMethod(
           'method',
           t.identifier(camelCase(operationId)),
           methodArgs,
           t.blockStatement([
             // return this.get('/foo', { ... }).json();
-            t.returnStatement(
-              // this.get(...).json()
-              t.callExpression(
-                // this.get(...).json
-                t.memberExpression(
-                  // this.get(...)
-                  t.callExpression(
-                    // this.get
-                    t.memberExpression(
-                      t.thisExpression(),
-                      t.identifier(method.toLowerCase())
-                    ),
-                    fetchArgs
-                  ),
-                  t.identifier('json')
-                ),
-                []
-              )
-            ),
+            t.returnStatement(fetchCallChain),
           ])
         );
 
-        const responseType = buildResponseType(responses, components);
-
         return Object.assign(classMethod, {
-          returnType: t.typeAnnotation(responseType),
+          returnType: t.typeAnnotation(
+            t.genericTypeAnnotation(
+              t.identifier('Promise'),
+              t.typeParameterInstantiation([responseType])
+            )
+          ),
         });
       }
     );
@@ -158,4 +178,28 @@ export default function generateEndpoints({
 
 function generateOperationId(method: string, path: string) {
   return camelCase(method + path);
+}
+
+/**
+ * ensure we have { headers: { accept: 'some/type' } }
+ */
+function addAcceptHeader(
+  fetchOpts: t.ObjectProperty[],
+  acceptMimeType: string
+) {
+  let headersOpt = fetchOpts.find(o =>
+    t.isIdentifier(o.key, { name: 'headers' })
+  );
+  if (!headersOpt) {
+    headersOpt = t.objectProperty(
+      t.identifier('headers'),
+      t.objectExpression([])
+    );
+    fetchOpts.push(headersOpt);
+  }
+  if (t.isObjectExpression(headersOpt.value)) {
+    headersOpt.value.properties.push(
+      t.objectProperty(t.identifier('accept'), t.stringLiteral(acceptMimeType))
+    );
+  }
 }

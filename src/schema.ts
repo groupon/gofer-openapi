@@ -36,11 +36,14 @@ import { normalizeRefPath } from './refs';
 
 const debug = Debug('gofer:openapi:schema');
 
-function objectTypeAnnotation({
-  properties = {},
-  required = [],
-  additionalProperties,
-}: OpenAPIV3.NonArraySchemaObject) {
+function objectTypeAnnotation(
+  {
+    properties = {},
+    required = [],
+    additionalProperties,
+  }: OpenAPIV3.NonArraySchemaObject,
+  path: string[]
+) {
   const addPropAnn =
     !!additionalProperties &&
     typeof additionalProperties === 'object' &&
@@ -48,7 +51,10 @@ function objectTypeAnnotation({
       t.identifier('Record'),
       t.typeParameterInstantiation([
         t.stringTypeAnnotation(),
-        schemaToAnnotation(additionalProperties),
+        schemaToAnnotation(additionalProperties, [
+          ...path,
+          'additionalProperties',
+        ]),
       ])
     );
 
@@ -57,7 +63,7 @@ function objectTypeAnnotation({
       Object.assign(
         t.objectTypeProperty(
           t.isValidIdentifier(key) ? t.identifier(key) : t.stringLiteral(key),
-          schemaToAnnotation(propSchema)
+          schemaToAnnotation(propSchema, [...path, key])
         ),
         { optional: !required.includes(key) }
       )
@@ -77,7 +83,8 @@ function objectTypeAnnotation({
 }
 
 export function schemaToAnnotation(
-  refOrSchema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject
+  refOrSchema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject,
+  path: string[] = []
 ): t.FlowType {
   if ('$ref' in refOrSchema) {
     return t.genericTypeAnnotation(
@@ -85,15 +92,26 @@ export function schemaToAnnotation(
     );
   }
   const schema = refOrSchema;
+  if (!schema.type && schema.properties) schema.type = 'object';
 
   const { type, anyOf, allOf, enum: enoom } = schema;
 
-  if (anyOf) return t.unionTypeAnnotation(anyOf.map(schemaToAnnotation));
-  if (allOf) return t.intersectionTypeAnnotation(allOf.map(schemaToAnnotation));
+  if (anyOf) {
+    return t.unionTypeAnnotation(
+      anyOf.map((x, i) => schemaToAnnotation(x, [...path, 'anyOf', `${i}`]))
+    );
+  }
+  if (allOf) {
+    return t.intersectionTypeAnnotation(
+      allOf.map((x, i) => schemaToAnnotation(x, [...path, 'allOf', `${i}`]))
+    );
+  }
 
   switch (type) {
     case 'array':
-      return t.arrayTypeAnnotation(schemaToAnnotation(schema.items));
+      return t.arrayTypeAnnotation(
+        schemaToAnnotation(schema.items, [...path, 'items'])
+      );
     case 'string':
       if (enoom) {
         return t.unionTypeAnnotation(
@@ -112,9 +130,9 @@ export function schemaToAnnotation(
     case 'boolean':
       return t.booleanTypeAnnotation();
     case 'object':
-      return objectTypeAnnotation(schema);
+      return objectTypeAnnotation(schema, path);
     default:
-      debug(`No handler for type ${type || '<empty>'}`);
+      debug(`%s: No handler for type ${type || '<empty>'}`, path.join('.'));
       return t.anyTypeAnnotation();
   }
 }

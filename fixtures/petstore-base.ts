@@ -93,7 +93,7 @@ export class PetStoreBase extends Gofer {
     return this.get("/pet/{petId}", {
       endpointName: "getPetById",
       pathParams: {
-        petId: opts.petId
+        petId: `${opts.petId}`
       }
     }).json();
   }
@@ -110,9 +110,9 @@ export class PetStoreBase extends Gofer {
         status: opts.status
       },
       pathParams: {
-        petId: opts.petId
+        petId: `${opts.petId}`
       }
-    }).json();
+    }).rawBody().then(() => {});
   }
 
   deletePet(opts: {
@@ -122,12 +122,12 @@ export class PetStoreBase extends Gofer {
     return this.delete("/pet/{petId}", {
       endpointName: "deletePet",
       pathParams: {
-        petId: opts.petId
+        petId: `${opts.petId}`
       },
       headers: {
         api_key: opts.apiKey
       }
-    }).json();
+    }).rawBody().then(() => {});
   }
 
   uploadFile(opts: {
@@ -140,7 +140,7 @@ export class PetStoreBase extends Gofer {
         additionalMetadata: opts.additionalMetadata
       },
       pathParams: {
-        petId: opts.petId
+        petId: `${opts.petId}`
       }
     }).json();
   }
@@ -164,7 +164,7 @@ export class PetStoreBase extends Gofer {
     return this.get("/store/order/{orderId}", {
       endpointName: "getOrderById",
       pathParams: {
-        orderId: opts.orderId
+        orderId: `${opts.orderId}`
       }
     }).json();
   }
@@ -175,16 +175,16 @@ export class PetStoreBase extends Gofer {
     return this.delete("/store/order/{orderId}", {
       endpointName: "deleteOrder",
       pathParams: {
-        orderId: opts.orderId
+        orderId: `${opts.orderId}`
       }
-    }).json();
+    }).rawBody().then(() => {});
   }
 
   createUser(user?: User): Promise<void> {
     return this.post("/user", {
       endpointName: "createUser",
       json: user
-    }).json();
+    }).rawBody().then(() => {});
   }
 
   createUsersWithListInput(users?: User[]): Promise<User> {
@@ -210,7 +210,7 @@ export class PetStoreBase extends Gofer {
   logoutUser(): Promise<void> {
     return this.get("/user/logout", {
       endpointName: "logoutUser"
-    }).json();
+    }).rawBody().then(() => {});
   }
 
   getUserByName(opts: {
@@ -234,7 +234,7 @@ export class PetStoreBase extends Gofer {
         username: opts.username
       },
       json: opts.body
-    }).json();
+    }).rawBody().then(() => {});
   }
 
   deleteUser(opts: {
@@ -245,7 +245,7 @@ export class PetStoreBase extends Gofer {
       pathParams: {
         username: opts.username
       }
-    }).json();
+    }).rawBody().then(() => {});
   }
 
 }
