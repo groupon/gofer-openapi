@@ -29,27 +29,23 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 import * as t from '@babel/types';
-import Debug from 'debug';
 import type { OpenAPIV3 } from 'openapi-types';
 
 import { normalizeRefName } from './refs';
 import { schemaToAnnotation } from './schema';
-
-const debug = Debug('gofer:openapi:type-decls');
 
 export default function generateTypeDecls(
   components: OpenAPIV3.ComponentsObject = {}
 ): t.ExportNamedDeclaration[] {
   const { schemas } = components;
 
-  return Object.entries(schemas || {}).flatMap(([key, schema]) => {
-    debug(`Schema [${key}]`);
-    return t.exportNamedDeclaration(
+  return Object.entries(schemas || {}).flatMap(([key, schema]) =>
+    t.exportNamedDeclaration(
       t.typeAlias(
         t.identifier(normalizeRefName('schemas', key)),
         null,
-        schemaToAnnotation(schema)
+        schemaToAnnotation(schema, [key])
       )
-    );
-  });
+    )
+  );
 }
