@@ -118,6 +118,13 @@ export default function generateEndpoints({
           fetchOpts.push(...paramFetchOpts);
         }
 
+        const { goferMethod, responseType, acceptMimeType } = buildResponseType(
+          responses,
+          components
+        );
+
+        if (acceptMimeType) addAcceptHeader(fetchOpts, acceptMimeType);
+
         const classMethod = t.classMethod(
           'method',
           t.identifier(camelCase(operationId)),
@@ -138,7 +145,7 @@ export default function generateEndpoints({
                     ),
                     fetchArgs
                   ),
-                  t.identifier('json')
+                  t.identifier(goferMethod)
                 ),
                 []
               )
@@ -146,10 +153,13 @@ export default function generateEndpoints({
           ])
         );
 
-        const responseType = buildResponseType(responses, components);
-
         return Object.assign(classMethod, {
-          returnType: t.typeAnnotation(responseType),
+          returnType: t.typeAnnotation(
+            t.genericTypeAnnotation(
+              t.identifier('Promise'),
+              t.typeParameterInstantiation([responseType])
+            )
+          ),
         });
       }
     );
@@ -158,4 +168,28 @@ export default function generateEndpoints({
 
 function generateOperationId(method: string, path: string) {
   return camelCase(method + path);
+}
+
+/**
+ * ensure we have { headers: { accept: 'some/type' } }
+ */
+function addAcceptHeader(
+  fetchOpts: t.ObjectProperty[],
+  acceptMimeType: string
+) {
+  let headersOpt = fetchOpts.find(o =>
+    t.isIdentifier(o.key, { name: 'headers' })
+  );
+  if (!headersOpt) {
+    headersOpt = t.objectProperty(
+      t.identifier('headers'),
+      t.objectExpression([])
+    );
+    fetchOpts.push(headersOpt);
+  }
+  if (t.isObjectExpression(headersOpt.value)) {
+    headersOpt.value.properties.push(
+      t.objectProperty(t.identifier('accept'), t.stringLiteral(acceptMimeType))
+    );
+  }
 }

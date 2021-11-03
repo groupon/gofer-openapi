@@ -59,7 +59,10 @@ export default function parseParameters(
   parameters: (o.ReferenceObject | o.ParameterObject)[],
   components: o.ComponentsObject
 ): [(t.AssignmentPattern | t.Identifier)[], t.ObjectProperty[]] {
-  const params: Record<'qs' | 'pathParams' | 'headers', [string, string][]> = {
+  const params: Record<
+    'qs' | 'pathParams' | 'headers',
+    { name: string; camelName: string; isString: boolean }[]
+  > = {
     qs: [],
     pathParams: [],
     headers: [],
@@ -84,16 +87,21 @@ export default function parseParameters(
     const { in: section, name, schema, required } = param;
 
     const camelName = camelCase(name);
+    const paramInfo = {
+      name,
+      camelName,
+      isString: !(schema && 'type' in schema && schema.type !== 'string'),
+    };
 
     switch (section) {
       case 'query':
-        params.qs.push([name, camelName]);
+        params.qs.push(paramInfo);
         break;
       case 'path':
-        params.pathParams.push([name, camelName]);
+        params.pathParams.push(paramInfo);
         break;
       case 'header':
-        params.headers.push([name, camelName]);
+        params.headers.push(paramInfo);
         break;
       case 'body':
         hasBody = true;
@@ -104,7 +112,7 @@ export default function parseParameters(
     }
 
     const annotation = schema
-      ? schemaToAnnotation(schema)
+      ? schemaToAnnotation(schema, [name])
       : t.stringTypeAnnotation();
     optTypeProps.push(
       Object.assign(t.objectTypeProperty(t.identifier(camelName), annotation), {
@@ -148,15 +156,25 @@ export default function parseParameters(
             t.objectProperty(
               t.identifier(opt),
               t.objectExpression(
-                vars.map(([name, camelName]) =>
-                  t.objectProperty(
-                    idOrLiteral(name),
-                    t.memberExpression(
-                      t.identifier('opts'),
-                      t.identifier(camelName)
-                    )
-                  )
-                )
+                vars.map(({ name, camelName, isString }) => {
+                  let value: t.Expression = t.memberExpression(
+                    t.identifier('opts'),
+                    t.identifier(camelName)
+                  );
+                  if (opt === 'pathParams' && !isString) {
+                    // if we didn't get a string, and we need a string,
+                    // wrap it:
+                    // opts.foo -> `${opts.foo}`
+                    value = t.templateLiteral(
+                      [
+                        t.templateElement({ raw: '' }),
+                        t.templateElement({ raw: '' }),
+                      ],
+                      [value]
+                    );
+                  }
+                  return t.objectProperty(idOrLiteral(name), value);
+                })
               )
             ),
           ]
