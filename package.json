@@ -16,15 +16,11 @@
     "url": "https://github.com/groupon/gofer-openapi/issues"
   },
   "scripts": {
-    "build": "rm -rf lib && tsc",
     "lint": "npm-run-all lint:*",
     "lint:ts": "eslint .",
-    "lint:js": "eslint .",
-    "prepublishOnly": "npm run build",
     "pretest": "npm-run-all pretest:*",
-    "pretest:build": "npm run build",
-    "pretest:lint": "npm-run-all lint:*",
     "pretest:ts": "npm run ts",
+    "pretest:lint": "npm-run-all lint:*",
     "test": "npm-run-all test:*",
     "test:unit": "c8 mocha",
     "posttest": "npm-run-all posttest:*",
