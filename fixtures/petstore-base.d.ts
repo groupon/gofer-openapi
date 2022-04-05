@@ -73,6 +73,7 @@ export declare class PetStoreBase extends Gofer {
     uploadFile(opts: {
         petId: number;
         additionalMetadata?: string;
+        body?: string;
     }): Promise<ApiResponse>;
     getInventory(): Promise<Record<string, number>>;
     placeOrder(order?: Order): Promise<Order>;

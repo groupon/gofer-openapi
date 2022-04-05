@@ -61,8 +61,9 @@ class PetStoreBase extends gofer_1.default {
             pathParams: {
                 petId: `${opts.petId}`
             },
-            headers: {
-                api_key: opts.apiKey
+            headers: { ...(opts.apiKey && {
+                    api_key: opts.apiKey
+                })
             }
         }).rawBody().then(() => { });
     }
@@ -74,7 +75,8 @@ class PetStoreBase extends gofer_1.default {
             },
             pathParams: {
                 petId: `${opts.petId}`
-            }
+            },
+            body: opts.body
         }).json();
     }
     getInventory() {

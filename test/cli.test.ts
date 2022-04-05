@@ -11,7 +11,9 @@ function runCLI(cmdline: string) {
   });
 }
 
-describe('cli', () => {
+describe('cli', function () {
+  this.timeout(10000); // CLI runs can be slow
+
   let specPath: string;
   before(() => {
     const tmpDir = mkdtempSync(path.join(tmpdir(), 'cli-test-'));

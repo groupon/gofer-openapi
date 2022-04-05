@@ -1,7 +1,7 @@
 {
   "root": true,
   "extends": [
-    "groupon",
+    "groupon/typescript",
     "plugin:regexp/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
@@ -33,7 +33,7 @@
   "overrides": [
     {
       "files": [
-        "*.test.js",
+        "*.test.*",
         "test/**"
       ],
       "env": {

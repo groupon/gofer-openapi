@@ -41,13 +41,18 @@ export type User = {
 };
 export default class PetStore2Base extends OtherLib {
   uploadFile(opts: {
-    petId: number
+    petId: number,
+    body?: {
+      additionalMetadata?: string,
+      file?: string,
+    },
   }): Promise<ApiResponse> {
     return this.post("/pet/{petId}/uploadImage", {
       endpointName: "uploadFile",
       pathParams: {
         petId: `${opts.petId}`
-      }
+      },
+      json: opts.body
     }).json();
   }
 
@@ -99,13 +104,18 @@ export default class PetStore2Base extends OtherLib {
   }
 
   updatePetWithForm(opts: {
-    petId: number
+    petId: number,
+    body?: {
+      name?: string,
+      status?: string,
+    },
   }): Promise<void> {
     return this.post("/pet/{petId}", {
       endpointName: "updatePetWithForm",
       pathParams: {
         petId: `${opts.petId}`
-      }
+      },
+      json: opts.body
     }).rawBody().then(() => {});
   }
 
@@ -118,8 +128,9 @@ export default class PetStore2Base extends OtherLib {
       pathParams: {
         petId: `${opts.petId}`
       },
-      headers: {
-        api_key: opts.apiKey
+      headers: { ...(opts.apiKey && {
+          api_key: opts.apiKey
+        })
       }
     }).rawBody().then(() => {});
   }
