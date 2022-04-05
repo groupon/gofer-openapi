@@ -32,6 +32,7 @@ import * as t from '@babel/types';
 import type { OpenAPIV3 as o } from 'openapi-types';
 import Debug from 'debug';
 import camelCase from 'lodash.camelcase';
+import upperFirst from 'lodash.upperfirst';
 
 import { resolveRef, resolveMaybeRef } from '../refs';
 import { schemaToAnnotation } from '../schema';
@@ -71,6 +72,7 @@ export default function parseParameters(
   let bodyMethod: 'json' | 'body' = 'json';
 
   const optTypeProps: t.ObjectTypeProperty[] = [];
+  const seenCamelName: Set<string> = new Set();
 
   for (const refOrParam of parameters) {
     let param: o.ParameterObject;
@@ -94,7 +96,19 @@ export default function parseParameters(
       debug(err);
     }
 
-    const camelName = camelCase(name);
+    // camel-case all of the names... but if that causes a collision,
+    // try to make them unique by appending the section, e.g.:
+    // type -> typeQuery, type -> typeHeader, etc.
+    let camelName = camelCase(name);
+    if (seenCamelName.has(camelName)) {
+      camelName += upperFirst(section);
+      if (seenCamelName.has(camelName)) {
+        debug(`Skipping param ${name}: cannot make unique`);
+        continue;
+      }
+    }
+    seenCamelName.add(camelName);
+
     const paramInfo = {
       name,
       camelName,
