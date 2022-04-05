@@ -128,8 +128,9 @@ export default class PetStore2Base extends OtherLib {
       pathParams: {
         petId: `${opts.petId}`
       },
-      headers: {
-        api_key: opts.apiKey
+      headers: { ...(opts.apiKey && {
+          api_key: opts.apiKey
+        })
       }
     }).rawBody().then(() => {});
   }

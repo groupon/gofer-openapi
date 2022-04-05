@@ -62,7 +62,7 @@ export default function parseParameters(
 ): [(t.AssignmentPattern | t.Identifier)[], t.ObjectProperty[]] {
   const params: Record<
     'qs' | 'pathParams' | 'headers',
-    { name: string; camelName: string; isString: boolean }[]
+    { name: string; camelName: string; required: boolean; isString: boolean }[]
   > = {
     qs: [],
     pathParams: [],
@@ -112,6 +112,7 @@ export default function parseParameters(
     const paramInfo = {
       name,
       camelName,
+      required: !!required,
       isString: !(
         resolvedSchema &&
         'type' in resolvedSchema &&
@@ -189,7 +190,7 @@ export default function parseParameters(
             t.objectProperty(
               t.identifier(opt),
               t.objectExpression(
-                vars.map(({ name, camelName, isString }) => {
+                vars.map(({ name, camelName, isString, required }) => {
                   let value: t.Expression = t.memberExpression(
                     t.identifier('opts'),
                     t.identifier(camelName)
@@ -206,6 +207,21 @@ export default function parseParameters(
                       [value]
                     );
                   }
+
+                  if (opt === 'headers' && !required) {
+                    // don't include optional headers if missing, e.g.:
+                    // ...(opts.foo && { foo: opts.foo })
+                    return t.spreadElement(
+                      t.logicalExpression(
+                        '&&',
+                        value,
+                        t.objectExpression([
+                          t.objectProperty(idOrLiteral(name), value),
+                        ])
+                      )
+                    );
+                  }
+
                   return t.objectProperty(idOrLiteral(name), value);
                 })
               )
