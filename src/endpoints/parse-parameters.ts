@@ -33,7 +33,7 @@ import type { OpenAPIV3 as o } from 'openapi-types';
 import Debug from 'debug';
 import camelCase from 'lodash.camelcase';
 
-import { resolveRef } from '../refs';
+import { resolveRef, resolveMaybeRef } from '../refs';
 import { schemaToAnnotation } from '../schema';
 
 const debug = Debug('gofer:openapi:parse-parameters');
@@ -68,6 +68,7 @@ export default function parseParameters(
     headers: [],
   };
   let hasBody = false;
+  let bodyMethod: 'json' | 'body' = 'json';
 
   const optTypeProps: t.ObjectTypeProperty[] = [];
 
@@ -86,11 +87,22 @@ export default function parseParameters(
 
     const { in: section, name, schema, required } = param;
 
+    let resolvedSchema = schema;
+    try {
+      resolvedSchema = resolveMaybeRef(schema, components);
+    } catch (err) {
+      debug(err);
+    }
+
     const camelName = camelCase(name);
     const paramInfo = {
       name,
       camelName,
-      isString: !(schema && 'type' in schema && schema.type !== 'string'),
+      isString: !(
+        resolvedSchema &&
+        'type' in resolvedSchema &&
+        resolvedSchema.type !== 'string'
+      ),
     };
 
     switch (section) {
@@ -105,6 +117,11 @@ export default function parseParameters(
         break;
       case 'body':
         hasBody = true;
+        // TODO: handle form data (and multipart(?)) bodies
+        if (paramInfo.isString) {
+          debug('switching to "body:" for schema:', schema);
+          bodyMethod = 'body';
+        }
         break;
       default:
         debug(`"in: ${section}" for ${name} not supported`);
@@ -139,7 +156,9 @@ export default function parseParameters(
       typeAnnotation: t.typeAnnotation(annotation),
       optional,
     });
-    fetchOpts = [t.objectProperty(t.identifier('json'), t.identifier(varName))];
+    fetchOpts = [
+      t.objectProperty(t.identifier(bodyMethod), t.identifier(varName)),
+    ];
   } else {
     // (opts: { someOpt: string }) | (opts: { someOpt?: string } = {})
     methodArg = Object.assign(t.identifier('opts'), {
@@ -184,7 +203,7 @@ export default function parseParameters(
     if (hasBody) {
       fetchOpts.push(
         t.objectProperty(
-          t.identifier('json'),
+          t.identifier(bodyMethod),
           t.memberExpression(t.identifier('opts'), t.identifier('body'))
         )
       );

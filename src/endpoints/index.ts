@@ -91,14 +91,21 @@ export default function generateEndpoints({
 
         if (requestBody) {
           const reqBody = resolveMaybeRef(requestBody, components);
-          const jsonReqBodySchema =
-            reqBody.content?.['application/json']?.schema;
-          if (jsonReqBodySchema) {
+          // prefer JSON if we can get it
+          let reqBodySchema = reqBody.content?.['application/json']?.schema;
+          // else fall back on first of whatever else is available
+          if (!reqBodySchema && reqBody.content) {
+            const mimeTypes = Object.keys(reqBody.content);
+            if (mimeTypes.length > 0) {
+              reqBodySchema = reqBody.content[mimeTypes[0]].schema;
+            }
+          }
+          if (reqBodySchema) {
             // TODO: something nicer than just "body" as opt
             parameters.push({
               name: 'body',
               in: 'body',
-              schema: jsonReqBodySchema,
+              schema: reqBodySchema,
               required: reqBody.required || false,
             });
           } else {

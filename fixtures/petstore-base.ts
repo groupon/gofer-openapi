@@ -133,6 +133,7 @@ export class PetStoreBase extends Gofer {
   uploadFile(opts: {
     petId: number,
     additionalMetadata?: string,
+    body?: string,
   }): Promise<ApiResponse> {
     return this.post("/pet/{petId}/uploadImage", {
       endpointName: "uploadFile",
@@ -141,7 +142,8 @@ export class PetStoreBase extends Gofer {
       },
       pathParams: {
         petId: `${opts.petId}`
-      }
+      },
+      body: opts.body
     }).json();
   }
 

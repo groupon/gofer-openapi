@@ -74,7 +74,8 @@ class PetStoreBase extends gofer_1.default {
             },
             pathParams: {
                 petId: `${opts.petId}`
-            }
+            },
+            body: opts.body
         }).json();
     }
     getInventory() {
