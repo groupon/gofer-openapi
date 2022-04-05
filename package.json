@@ -1,6 +1,6 @@
 {
   "name": "gofer-openapi",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Gofer Openapi",
   "license": "BSD-3-Clause",
   "main": "lib/gofer-openapi.js",

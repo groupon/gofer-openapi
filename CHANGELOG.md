@@ -1,3 +1,10 @@
+### v2.2.0 (2022-04-05)
+<a id="v2.2.0"></a>
+#### 🏡 Internal
+
+* [#4](https://github.com/groupon/gofer-openapi/pull/4) Handle non-JSON bodies & colliding params ([@dbushong](https://github.com/dbushong))
+
+
 ### v2.1.0 (2021-11-03)
 <a id="v2.1.0"></a>
 #### 🏡 Internal
